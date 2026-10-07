@@ -1,0 +1,8 @@
+SpectraFlow is an advanced open-source audio streaming, offline vault, and studio DSP player built for audiophiles, lossless collectors, and sound lovers.
+
+Key Features:
+• Bit-Perfect DAC Engine: Direct hardware AudioTrack passthrough rendering unadulterated 24-bit / 96kHz and 192kHz FLAC, bypassing Android OS resamplers.
+• Acoustic Car DSP Matrix: Pre-calibrated cabin reflection curves (Pioneer 7600 Space Expand, Alpine BassEngine Pro, Clarion HX-D2) designed to cut through vehicle road noise.
+• Dual-Persona Architecture: Switch between a clean 1-tap playback view and an Audiophile Studio with a 10-band parametric EQ and live audio spec HUD.
+• Offline Vault & Synced Lyrics: Ultra-low latency lookahead buffering, LRCLIB synchronized lyrics, and lossless local storage indexing.
+• 100% Free & Open-Source: No ads, no background trackers, licensed under GPL-3.0.
