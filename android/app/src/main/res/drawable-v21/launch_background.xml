@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Cold-start splash shown while the Flutter engine boots. Matches the
+  Beam Reveal splash that takes over once Flutter paints its first frame.
+  Keep this layer-list black so the transition into the Flutter splash is
+  seamless.
+-->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@android:color/black" />
+</layer-list>
