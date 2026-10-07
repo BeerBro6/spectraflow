@@ -5,6 +5,8 @@
 [![Flutter](https://img.shields.io/badge/Built%20with-Flutter-02569B?logo=flutter)](https://flutter.dev)
 [![Audio: Hi-Res FLAC](https://img.shields.io/badge/Audio-Lossless%20FLAC-00F2FE)](#)
 [![Lyrics: Synced LRCLIB](https://img.shields.io/badge/Lyrics-Synchronized%20LRC-FF2E93)](#)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Preview%20Site-00F2FE?logo=google-chrome&logoColor=black)](https://beerbro6.github.io/spectraflow-preview/)
+[![Latest Release](https://img.shields.io/github/v/release/BeerBro6/spectraflow?color=9D4EDD&label=APK%20Release)](https://github.com/BeerBro6/spectraflow/releases/latest)
 
 ---
 
