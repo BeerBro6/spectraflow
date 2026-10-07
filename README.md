@@ -7,6 +7,7 @@
 [![Lyrics: Synced LRCLIB](https://img.shields.io/badge/Lyrics-Synchronized%20LRC-FF2E93)](#)
 [![Live Demo](https://img.shields.io/badge/Live%20Demo-Preview%20Site-00F2FE?logo=google-chrome&logoColor=black)](https://beerbro6.github.io/spectraflow-preview/)
 [![Latest Release](https://img.shields.io/github/v/release/BeerBro6/spectraflow?color=9D4EDD&label=APK%20Release)](https://github.com/BeerBro6/spectraflow/releases/latest)
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-ffdd00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/beerbro6)
 
 ---
 
@@ -53,6 +54,16 @@ flutter pub get
 # Run on connected device or emulator
 flutter run
 ```
+
+---
+
+## 💖 Support the Project
+
+If you love **SpectraFlow** and want to support ongoing development, lossless sound research, and project maintenance, consider buying me a coffee!
+
+<a href="https://buymeacoffee.com/beerbro6">
+  <img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" width="180" />
+</a>
 
 ---
 
