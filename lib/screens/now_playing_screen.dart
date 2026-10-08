@@ -10,6 +10,7 @@ import '../widgets/track_artwork.dart';
 import 'library_screen.dart' show LibraryViewMode;
 import 'eq_test_screen.dart' show EqService, EqPresetType;
 import 'eq_screen.dart' show EqScreen;
+import '../widgets/liquid_glass.dart';
 
 class NowPlayingScreen extends StatefulWidget {
   final AudioPlayerService playerService;
@@ -217,20 +218,19 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
             final playlist = widget.playerService.playlist;
             final currentTrack = widget.playerService.currentTrack;
 
-            return Container(
+            return LiquidGlassContainer(
               height: MediaQuery.of(context).size.height * 0.70,
-              decoration: BoxDecoration(
-                color: const Color(0xFF14171E),
-                borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-                border: Border.all(color: Colors.white12, width: 1),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.6),
-                    blurRadius: 30,
-                    offset: const Offset(0, -5),
-                  ),
-                ],
-              ),
+              borderRadius: 28,
+              blur: 20,
+              tintColor: const Color(0xFF14171E),
+              tintAlpha: 0.85,
+              glowShadows: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.7),
+                  blurRadius: 36,
+                  offset: const Offset(0, -6),
+                ),
+              ],
               child: Column(
                 children: [
                   const SizedBox(height: 12),
@@ -576,13 +576,17 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                           tooltip: 'Minimize / Back',
                           onPressed: () => _handleBack(context),
                         ),
-                        Text(
-                          _activePageIndex == 0 ? 'NOW PLAYING' : 'LYRICS',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            letterSpacing: 2.5,
-                            fontWeight: FontWeight.w600,
-                            color: Colors.white54,
+                        LiquidGlassPill(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
+                          accentColor: SpectraTheme.cyanWave,
+                          child: Text(
+                            _activePageIndex == 0 ? 'NOW PLAYING' : 'LYRICS',
+                            style: const TextStyle(
+                              fontSize: 11,
+                              letterSpacing: 2.2,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
                           ),
                         ),
                         Row(
@@ -625,7 +629,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                         controller: _pageController,
                         onPageChanged: (idx) => setState(() => _activePageIndex = idx),
                         children: [
-                          // PAGE 1: Album Artwork with glowing ambient shadow (Swipe left or tap to view lyrics)
+                          // PAGE 1: Album Artwork with Liquid Glass Frame and glowing ambient backlight
                           GestureDetector(
                             behavior: HitTestBehavior.opaque,
                             onTap: () {
@@ -637,46 +641,83 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                             },
                             child: Center(
                               child: Container(
-                                width: 290,
-                                height: 290,
+                                width: 296,
+                                height: 296,
                                 decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(28),
+                                  borderRadius: BorderRadius.circular(30),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: ambientColors[0].withValues(alpha: 0.5),
-                                      blurRadius: 46,
+                                      color: ambientColors[0].withValues(alpha: 0.55),
+                                      blurRadius: 48,
                                       spreadRadius: 4,
                                     ),
                                     BoxShadow(
-                                      color: ambientColors[1].withValues(alpha: 0.4),
-                                      blurRadius: 54,
+                                      color: ambientColors.length > 1
+                                          ? ambientColors[1].withValues(alpha: 0.45)
+                                          : SpectraTheme.cyanWave.withValues(alpha: 0.3),
+                                      blurRadius: 56,
                                       spreadRadius: -2,
                                     ),
                                   ],
                                 ),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(28),
-                                  child: TrackArtwork(
-                                    key: ValueKey(track.artworkUrl ?? track.id),
-                                    artworkUrl: track.artworkUrl,
-                                    width: 290,
-                                    height: 290,
-                                    fit: BoxFit.cover,
+                                child: RepaintBoundary(
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(30),
+                                    child: Stack(
+                                      alignment: Alignment.center,
+                                      children: [
+                                        TrackArtwork(
+                                          key: ValueKey(track.artworkUrl ?? track.id),
+                                          artworkUrl: track.artworkUrl,
+                                          width: 296,
+                                          height: 296,
+                                          fit: BoxFit.cover,
+                                        ),
+                                        // Specular Liquid Glass refractive sheen
+                                        IgnorePointer(
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              borderRadius: BorderRadius.circular(30),
+                                              border: Border.all(
+                                                color: Colors.white.withValues(alpha: 0.24),
+                                                width: 1.5,
+                                              ),
+                                              gradient: LinearGradient(
+                                                begin: Alignment.topLeft,
+                                                end: Alignment.bottomRight,
+                                                colors: [
+                                                  Colors.white.withValues(alpha: 0.16),
+                                                  Colors.transparent,
+                                                  Colors.black.withValues(alpha: 0.22),
+                                                ],
+                                                stops: const [0.0, 0.45, 1.0],
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
                           ),
 
-                          // PAGE 2: Synced Interactive Karaoke Lyrics (Tap any line to jump audio!)
-                          Container(
+                          // PAGE 2: Synced Interactive Karaoke Lyrics in Liquid Glass Container
+                          LiquidGlassContainer(
                             margin: const EdgeInsets.symmetric(vertical: 8),
                             padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.04),
-                              borderRadius: BorderRadius.circular(24),
-                              border: Border.all(color: Colors.white12),
-                            ),
+                            borderRadius: 24,
+                            blur: 18,
+                            tintColor: ambientColors[0],
+                            tintAlpha: 0.08,
+                            glowShadows: [
+                              BoxShadow(
+                                color: ambientColors[0].withValues(alpha: 0.25),
+                                blurRadius: 28,
+                                spreadRadius: -4,
+                              ),
+                            ],
                             child: _lyrics.isEmpty
                                 ? Center(
                                     child: _isLoadingLyrics
@@ -961,20 +1002,21 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                               return FittedBox(
                                 fit: BoxFit.scaleDown,
                                 alignment: Alignment.centerLeft,
-                                child: Container(
+                                child: LiquidGlassContainer(
+                                  borderRadius: 20,
+                                  blur: 14,
+                                  tintColor: isFlac ? SpectraTheme.cyanWave : Colors.white,
+                                  tintAlpha: isFlac ? 0.15 : 0.06,
                                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4.5),
-                                  decoration: BoxDecoration(
-                                    color: isFlac
-                                        ? SpectraTheme.cyanWave.withValues(alpha: 0.12)
-                                        : Colors.white.withValues(alpha: 0.05),
-                                    borderRadius: BorderRadius.circular(20),
-                                    border: Border.all(
-                                      color: isFlac
-                                          ? SpectraTheme.cyanWave.withValues(alpha: 0.35)
-                                          : Colors.white12,
-                                      width: 1,
-                                    ),
-                                  ),
+                                  glowShadows: isFlac
+                                      ? [
+                                          BoxShadow(
+                                            color: SpectraTheme.cyanWave.withValues(alpha: 0.22),
+                                            blurRadius: 14,
+                                            offset: const Offset(0, 2),
+                                          ),
+                                        ]
+                                      : null,
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
@@ -1035,106 +1077,131 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
 
                     const SizedBox(height: 12),
 
-                    // Seeker Bar
-                    Slider(
-                      value: position.inMilliseconds.clamp(0, duration.inMilliseconds).toDouble(),
-                      max: duration.inMilliseconds.toDouble(),
-                      onChanged: (val) {
-                        widget.playerService.seek(Duration(milliseconds: val.toInt()));
-                      },
-                    ),
-
-                    // Time Row
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    // FLOATING LIQUID GLASS CONTROLS DOCK
+                    LiquidGlassContainer(
+                      borderRadius: 28,
+                      blur: 20,
+                      tintColor: Colors.white,
+                      tintAlpha: 0.05,
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
+                      glowShadows: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.45),
+                          blurRadius: 26,
+                          offset: const Offset(0, 8),
+                        ),
+                        BoxShadow(
+                          color: ambientColors[0].withValues(alpha: 0.12),
+                          blurRadius: 20,
+                          offset: const Offset(0, 0),
+                        ),
+                      ],
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          Text(_formatDuration(position), style: const TextStyle(color: Colors.white38, fontSize: 12)),
-                          Text(_formatDuration(duration), style: const TextStyle(color: Colors.white38, fontSize: 12)),
+                          // Seeker Bar
+                          Slider(
+                            value: position.inMilliseconds.clamp(0, duration.inMilliseconds).toDouble(),
+                            max: duration.inMilliseconds.toDouble(),
+                            onChanged: (val) {
+                              widget.playerService.seek(Duration(milliseconds: val.toInt()));
+                            },
+                          ),
+
+                          // Time Row
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(_formatDuration(position), style: const TextStyle(color: Colors.white38, fontSize: 12)),
+                                Text(_formatDuration(duration), style: const TextStyle(color: Colors.white38, fontSize: 12)),
+                              ],
+                            ),
+                          ),
+
+                          const SizedBox(height: 8),
+
+                          // Playback Controls (Shuffle, Previous, Play/Pause, Next, Repeat)
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              // Shuffle Toggle
+                              IconButton(
+                                icon: Icon(
+                                  Icons.shuffle_rounded,
+                                  color: widget.playerService.isShuffle ? SpectraTheme.cyanWave : Colors.white38,
+                                  size: 24,
+                                ),
+                                tooltip: 'Shuffle: ${widget.playerService.isShuffle ? "ON" : "OFF"}',
+                                onPressed: () => widget.playerService.toggleShuffle(),
+                              ),
+
+                              // Skip Previous
+                              IconButton(
+                                icon: const Icon(Icons.skip_previous_rounded, color: Colors.white, size: 36),
+                                tooltip: 'Previous Track',
+                                onPressed: () => widget.playerService.previousTrack(),
+                              ),
+
+                              // Play/Pause Big Radiant Button
+                              Container(
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  gradient: const LinearGradient(
+                                    colors: [SpectraTheme.cyanWave, SpectraTheme.neonMagenta],
+                                  ),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: SpectraTheme.cyanWave.withValues(alpha: 0.45),
+                                      blurRadius: 22,
+                                    )
+                                  ],
+                                ),
+                                child: IconButton(
+                                  iconSize: 38,
+                                  icon: Icon(
+                                    widget.playerService.isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                                    color: Colors.white,
+                                  ),
+                                  tooltip: widget.playerService.isPlaying ? 'Pause' : 'Play',
+                                  onPressed: () => widget.playerService.togglePlayPause(),
+                                ),
+                              ),
+
+                              // Skip Next
+                              IconButton(
+                                icon: const Icon(Icons.skip_next_rounded, color: Colors.white, size: 36),
+                                tooltip: 'Next Track',
+                                onPressed: () => widget.playerService.nextTrack(),
+                              ),
+
+                              // Repeat Toggle
+                              IconButton(
+                                icon: Icon(
+                                  widget.playerService.isRepeat ? Icons.repeat_one_rounded : Icons.repeat_rounded,
+                                  color: widget.playerService.isRepeat ? SpectraTheme.neonMagenta : Colors.white38,
+                                  size: 24,
+                                ),
+                                tooltip: 'Repeat: ${widget.playerService.isRepeat ? "Track" : "OFF"}',
+                                onPressed: () => widget.playerService.toggleRepeat(),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 10),
+
+                          // --- PERSONA ADAPTIVE CONTROLS ---
+                          if (widget.viewMode == LibraryViewMode.classic) ...[
+                            // CLASSIC MINIMAL: 1-Tap Sound Presets
+                            _buildClassicQuickPresetsBar(),
+                          ] else ...[
+                            // AUDIOPHILE STUDIO: Studio DSP quick metrics & shortcuts
+                            _buildAudiophileStudioQuickBar(context),
+                          ],
                         ],
                       ),
                     ),
-
-                    const SizedBox(height: 10),
-
-                    // Playback Controls (Shuffle, Previous, Play/Pause, Next, Repeat)
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        // Shuffle Toggle
-                        IconButton(
-                          icon: Icon(
-                            Icons.shuffle_rounded,
-                            color: widget.playerService.isShuffle ? SpectraTheme.cyanWave : Colors.white38,
-                            size: 24,
-                          ),
-                          tooltip: 'Shuffle: ${widget.playerService.isShuffle ? "ON" : "OFF"}',
-                          onPressed: () => widget.playerService.toggleShuffle(),
-                        ),
-
-                        // Skip Previous
-                        IconButton(
-                          icon: const Icon(Icons.skip_previous_rounded, color: Colors.white, size: 36),
-                          tooltip: 'Previous Track',
-                          onPressed: () => widget.playerService.previousTrack(),
-                        ),
-
-                        // Play/Pause Big Radiant Button
-                        Container(
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            gradient: const LinearGradient(
-                              colors: [SpectraTheme.cyanWave, SpectraTheme.neonMagenta],
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: SpectraTheme.cyanWave.withValues(alpha: 0.35),
-                                blurRadius: 20,
-                              )
-                            ],
-                          ),
-                          child: IconButton(
-                            iconSize: 38,
-                            icon: Icon(
-                              widget.playerService.isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                              color: Colors.white,
-                            ),
-                            tooltip: widget.playerService.isPlaying ? 'Pause' : 'Play',
-                            onPressed: () => widget.playerService.togglePlayPause(),
-                          ),
-                        ),
-
-                        // Skip Next
-                        IconButton(
-                          icon: const Icon(Icons.skip_next_rounded, color: Colors.white, size: 36),
-                          tooltip: 'Next Track',
-                          onPressed: () => widget.playerService.nextTrack(),
-                        ),
-
-                        // Repeat Toggle
-                        IconButton(
-                          icon: Icon(
-                            widget.playerService.isRepeat ? Icons.repeat_one_rounded : Icons.repeat_rounded,
-                            color: widget.playerService.isRepeat ? SpectraTheme.neonMagenta : Colors.white38,
-                            size: 24,
-                          ),
-                          tooltip: 'Repeat: ${widget.playerService.isRepeat ? "Track" : "OFF"}',
-                          onPressed: () => widget.playerService.toggleRepeat(),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 12),
-
-                    // --- PERSONA ADAPTIVE CONTROLS ---
-                    if (widget.viewMode == LibraryViewMode.classic) ...[
-                      // CLASSIC MINIMAL: 1-Tap Sound Presets
-                      _buildClassicQuickPresetsBar(),
-                    ] else ...[
-                      // AUDIOPHILE STUDIO: Studio DSP quick metrics & shortcuts
-                      _buildAudiophileStudioQuickBar(context),
-                    ],
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 8),
                   ],
                 ),
               ),
@@ -1146,21 +1213,20 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
     );
   }
 
-  /// 1-Tap preset selector for Classic Mode
+  /// 1-Tap preset selector for Classic Mode in Liquid Glass
   Widget _buildClassicQuickPresetsBar() {
     final eq = EqService.instance;
     final activeType = eq.isEnabled && eq.currentPreset != null
         ? eq.currentPreset!.type
         : EqPresetType.flat;
 
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white10),
-      ),
+    return LiquidGlassContainer(
+      margin: const EdgeInsets.symmetric(horizontal: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+      borderRadius: 16,
+      blur: 14,
+      tintColor: Colors.white,
+      tintAlpha: 0.05,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
@@ -1217,52 +1283,49 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
     Color selectedColor = SpectraTheme.cyanWave,
     required VoidCallback onTap,
   }) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(10),
+    return LiquidGlassPill(
+      isSelected: isSelected,
+      accentColor: selectedColor,
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-        decoration: BoxDecoration(
-          color: isSelected ? selectedColor.withValues(alpha: 0.2) : Colors.transparent,
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-            color: isSelected ? selectedColor : Colors.transparent,
-            width: 1,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
+            size: 14,
+            color: isSelected ? selectedColor : Colors.white54,
           ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              size: 14,
-              color: isSelected ? selectedColor : Colors.white54,
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+              color: isSelected ? Colors.white : Colors.white60,
             ),
-            const SizedBox(width: 4),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                color: isSelected ? Colors.white : Colors.white60,
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
-  /// Audiophile quick DSP bar
+  /// Audiophile quick DSP bar in Liquid Glass
   Widget _buildAudiophileStudioQuickBar(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
+    return LiquidGlassContainer(
+      margin: const EdgeInsets.symmetric(horizontal: 8),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: SpectraTheme.cyanWave.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: SpectraTheme.cyanWave.withValues(alpha: 0.25)),
-      ),
+      borderRadius: 16,
+      blur: 14,
+      tintColor: SpectraTheme.cyanWave,
+      tintAlpha: 0.10,
+      glowShadows: [
+        BoxShadow(
+          color: SpectraTheme.cyanWave.withValues(alpha: 0.16),
+          blurRadius: 14,
+          offset: const Offset(0, 2),
+        ),
+      ],
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -1271,7 +1334,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
               Container(
                 padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
-                  color: SpectraTheme.cyanWave.withValues(alpha: 0.2),
+                  color: SpectraTheme.cyanWave.withValues(alpha: 0.25),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: const Icon(Icons.tune_rounded, size: 14, color: SpectraTheme.cyanWave),
@@ -1291,7 +1354,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
           Text(
             'BIT-PERFECT • GAPLESS',
             style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.5),
+              color: Colors.white.withValues(alpha: 0.6),
               fontSize: 9.5,
               fontWeight: FontWeight.bold,
               letterSpacing: 0.8,

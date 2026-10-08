@@ -684,31 +684,69 @@ class _Ambient extends StatelessWidget {
   }
 }
 
-/// Frosted acrylic panel: blurred backdrop, faint tint, 1px 15% white stroke.
+/// Frosted Liquid Glass panel: blurred backdrop, faint chromatic tint,
+/// 1px specular refractive stroke, and optional ambient underglow.
 class _Glass extends StatelessWidget {
-  const _Glass({required this.child, this.padding = EdgeInsets.zero, this.radius = 22});
+  const _Glass({
+    required this.child,
+    this.padding = EdgeInsets.zero,
+    this.radius = 22,
+  });
   final Widget child;
   final EdgeInsets padding;
   final double radius;
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(radius),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
-        child: Container(
-          padding: padding,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(radius),
-            border: Border.all(color: Prism.glassStroke, width: 1),
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [_a(Colors.white, 0.08), _a(Colors.white, 0.025)],
+    final r = BorderRadius.circular(radius);
+
+    const tint = Colors.white;
+
+    return RepaintBoundary(
+      child: ClipRRect(
+        borderRadius: r,
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+          child: Container(
+            padding: padding,
+            decoration: BoxDecoration(
+              borderRadius: r,
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.16),
+                width: 1.0,
+              ),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  tint.withValues(alpha: 0.08),
+                  tint.withValues(alpha: 0.02),
+                ],
+              ),
+            ),
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: IgnorePointer(
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        borderRadius: r,
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.center,
+                          colors: [
+                            Colors.white.withValues(alpha: 0.10),
+                            Colors.transparent,
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                child,
+              ],
             ),
           ),
-          child: child,
         ),
       ),
     );
@@ -897,36 +935,44 @@ class _PresetChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(23),
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [selected ? Prism.matteHi : const Color(0xFF1A1A23), Prism.matteLo],
-          ),
-          border: Border.all(color: selected ? _a(Prism.cyan, 0.6) : Prism.stroke),
-          boxShadow: selected
-              ? [BoxShadow(color: _a(Prism.cyan, 0.20), blurRadius: 14)]
-              : null,
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            _Led(on: selected),
-            const SizedBox(width: 9),
-            Text(
-              name,
-              style: TextStyle(
-                color: selected ? Prism.text : Prism.textDim,
-                fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
-                fontSize: 13.5,
+      child: RepaintBoundary(
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                color: selected
+                    ? Prism.cyan.withValues(alpha: 0.20)
+                    : Colors.white.withValues(alpha: 0.05),
+                border: Border.all(
+                  color: selected ? _a(Prism.cyan, 0.75) : Colors.white.withValues(alpha: 0.12),
+                ),
+                boxShadow: selected
+                    ? [BoxShadow(color: _a(Prism.cyan, 0.28), blurRadius: 16)]
+                    : null,
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  _Led(on: selected),
+                  const SizedBox(width: 9),
+                  Text(
+                    name,
+                    style: TextStyle(
+                      color: selected ? Prism.text : Prism.textDim,
+                      fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
+                      fontSize: 13.5,
+                    ),
+                  ),
+                ],
               ),
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -952,48 +998,56 @@ class _AutoEqChip extends StatelessWidget {
 
     return GestureDetector(
       onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-        decoration: BoxDecoration(
+      child: RepaintBoundary(
+        child: ClipRRect(
           borderRadius: BorderRadius.circular(18),
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [selected ? Prism.matteHi : const Color(0xFF1A1A23), Prism.matteLo],
-          ),
-          border: Border.all(color: selected ? _a(Prism.cyan, 0.7) : Prism.stroke),
-          boxShadow: selected
-              ? [BoxShadow(color: _a(Prism.cyan, 0.22), blurRadius: 14)]
-              : null,
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 16, color: selected ? Prism.cyan : Prism.textDim),
-            const SizedBox(width: 8),
-            Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  profile.displayName,
-                  style: TextStyle(
-                    color: selected ? Prism.text : Prism.textDim,
-                    fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                    fontSize: 12.5,
-                  ),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 180),
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(18),
+                color: selected
+                    ? Prism.cyan.withValues(alpha: 0.20)
+                    : Colors.white.withValues(alpha: 0.05),
+                border: Border.all(
+                  color: selected ? _a(Prism.cyan, 0.75) : Colors.white.withValues(alpha: 0.12),
                 ),
-                Text(
-                  '${profile.targetCurve.split(' ')[0]} • ${profile.bands.length} bands',
-                  style: TextStyle(
-                    color: selected ? Prism.cyan : Colors.white38,
-                    fontSize: 10,
+                boxShadow: selected
+                    ? [BoxShadow(color: _a(Prism.cyan, 0.25), blurRadius: 14)]
+                    : null,
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(icon, size: 16, color: selected ? Prism.cyan : Prism.textDim),
+                  const SizedBox(width: 8),
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        profile.displayName,
+                        style: TextStyle(
+                          color: selected ? Prism.text : Prism.textDim,
+                          fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
+                          fontSize: 12.5,
+                        ),
+                      ),
+                      Text(
+                        '${profile.targetCurve.split(' ')[0]} • ${profile.bands.length} bands',
+                        style: TextStyle(
+                          color: selected ? Prism.cyan : Colors.white38,
+                          fontSize: 10,
+                        ),
+                      ),
+                    ],
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ],
+          ),
         ),
       ),
     );

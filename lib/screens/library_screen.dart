@@ -4,6 +4,7 @@ import '../services/audio_player_service.dart';
 import '../services/local_vault_service.dart';
 import '../services/playlist_service.dart';
 import '../theme/theme.dart';
+import '../widgets/liquid_glass.dart';
 import '../widgets/track_artwork.dart';
 import 'now_playing_screen.dart';
 import 'eq_screen.dart' show EqScreen;
@@ -876,18 +877,19 @@ class _LibraryScreenState extends State<LibraryScreen> {
                           engineDescription = 'High-Definition Universal Audio Engine (320kbps)';
                         }
 
-                        return Container(
+                        return LiquidGlassContainer(
                           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                SpectraTheme.cyanWave.withValues(alpha: 0.12),
-                                SpectraTheme.neonMagenta.withValues(alpha: 0.12),
-                              ],
+                          borderRadius: 20,
+                          blur: 16,
+                          tintColor: SpectraTheme.cyanWave,
+                          tintAlpha: 0.10,
+                          glowShadows: [
+                            BoxShadow(
+                              color: SpectraTheme.cyanWave.withValues(alpha: 0.14),
+                              blurRadius: 18,
+                              offset: const Offset(0, 4),
                             ),
-                            borderRadius: BorderRadius.circular(18),
-                            border: Border.all(color: SpectraTheme.cyanWave.withValues(alpha: 0.25)),
-                          ),
+                          ],
                           child: Row(
                             children: [
                               Container(
@@ -937,7 +939,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
                       const SizedBox(height: 14),
                     ],
 
-                    // HORIZONTAL FUNCTIONAL CATEGORY CHIPS
+                    // HORIZONTAL FUNCTIONAL CATEGORY CHIPS IN LIQUID GLASS
                     SizedBox(
                       height: 38,
                       child: ListView.builder(
@@ -947,24 +949,13 @@ class _LibraryScreenState extends State<LibraryScreen> {
                           final cat = _categories[idx];
                           final isSelected = _selectedCategory == cat;
 
-                          return GestureDetector(
-                            onTap: () => setState(() => _selectedCategory = cat),
-                            child: Container(
-                              margin: const EdgeInsets.only(right: 8),
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 8),
+                            child: LiquidGlassPill(
+                              isSelected: isSelected,
+                              accentColor: isHybrid ? SpectraTheme.cyanWave : Colors.white,
                               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                              decoration: BoxDecoration(
-                                color: isSelected
-                                    ? (isHybrid
-                                        ? SpectraTheme.cyanWave.withValues(alpha: 0.22)
-                                        : Colors.white.withValues(alpha: 0.2))
-                                    : Colors.white.withValues(alpha: 0.05),
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(
-                                  color: isSelected
-                                      ? (isHybrid ? SpectraTheme.cyanWave : Colors.white)
-                                      : Colors.white12,
-                                ),
-                              ),
+                              onTap: () => setState(() => _selectedCategory = cat),
                               child: Text(
                                 cat,
                                 style: TextStyle(
@@ -983,7 +974,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
 
                     const SizedBox(height: 20),
 
-                    // QUICK PICKS SWIPEABLE CAROUSEL
+                    // QUICK PICKS SWIPEABLE CAROUSEL IN LIQUID GLASS
                     if (displayTracks.isNotEmpty) ...[
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1012,30 +1003,23 @@ class _LibraryScreenState extends State<LibraryScreen> {
                           itemCount: displayTracks.take(15).length,
                           itemBuilder: (context, idx) {
                             final track = displayTracks[idx];
-                            return GestureDetector(
-                              onTap: () => _openNowPlaying(track, displayTracks),
-                              child: Container(
-                                width: 135,
-                                margin: const EdgeInsets.only(right: 14),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.04),
-                                  borderRadius: BorderRadius.circular(18),
-                                  border: Border.all(
-                                    color: isHybrid
-                                        ? SpectraTheme.cyanWave.withValues(alpha: 0.2)
-                                        : Colors.white10,
-                                  ),
-                                  boxShadow: isHybrid
-                                      ? [
-                                          BoxShadow(
-                                            color: SpectraTheme.cyanWave.withValues(alpha: 0.12),
-                                            blurRadius: 16,
-                                            offset: const Offset(0, 4),
-                                          )
-                                        ]
-                                      : null,
-                                ),
+                            return Container(
+                              width: 135,
+                              margin: const EdgeInsets.only(right: 14),
+                              child: LiquidGlassCard(
+                                borderRadius: 18,
                                 padding: const EdgeInsets.all(10),
+                                tintColor: isHybrid ? SpectraTheme.cyanWave : Colors.white,
+                                glowShadows: isHybrid
+                                    ? [
+                                        BoxShadow(
+                                          color: SpectraTheme.cyanWave.withValues(alpha: 0.12),
+                                          blurRadius: 16,
+                                          offset: const Offset(0, 4),
+                                        )
+                                      ]
+                                    : null,
+                                onTap: () => _openNowPlaying(track, displayTracks),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [

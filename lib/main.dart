@@ -20,6 +20,7 @@ import 'services/local_audio_proxy_service.dart';
 import 'services/playlist_service.dart';
 import 'services/permission_hub_service.dart';
 import 'services/first_launch_service.dart';
+import 'widgets/liquid_glass.dart';
 import 'widgets/track_artwork.dart';
 
 void main() async {
@@ -290,21 +291,25 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
                     return _buildFloatingMiniPlayer(track);
                   },
                 ),
-              // Main navigation pill (4 items)
-              Container(
+              // Main navigation pill (4 items) in Liquid Glass
+              LiquidGlassContainer(
                 height: 64,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF161A22), // Soft matte dark capsule
-                  borderRadius: BorderRadius.circular(32), // Full capsule round pill
-                  border: Border.all(color: Colors.white.withValues(alpha: 0.08), width: 1),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.45),
-                      blurRadius: 20,
-                      offset: const Offset(0, 6),
-                    ),
-                  ],
-                ),
+                borderRadius: 32,
+                blur: 18,
+                tintColor: Colors.white,
+                tintAlpha: 0.06,
+                glowShadows: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.5),
+                    blurRadius: 24,
+                    offset: const Offset(0, 8),
+                  ),
+                  BoxShadow(
+                    color: SpectraTheme.cyanWave.withValues(alpha: 0.05),
+                    blurRadius: 20,
+                    offset: const Offset(0, 0),
+                  ),
+                ],
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
@@ -332,28 +337,28 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
 
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
-      decoration: BoxDecoration(
-        color: const Color(0xFF1A1F29), // Rich frosted dark capsule
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1), width: 1),
-        boxShadow: [
+      child: LiquidGlassContainer(
+        borderRadius: 18,
+        blur: 18,
+        tintColor: SpectraTheme.cyanWave,
+        tintAlpha: 0.06,
+        padding: EdgeInsets.zero,
+        glowShadows: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.5),
-            blurRadius: 16,
-            offset: const Offset(0, 4),
+            blurRadius: 20,
+            offset: const Offset(0, 6),
           ),
           BoxShadow(
-            color: SpectraTheme.cyanWave.withValues(alpha: 0.06),
-            blurRadius: 12,
+            color: SpectraTheme.cyanWave.withValues(alpha: 0.10),
+            blurRadius: 16,
             offset: const Offset(0, 0),
           ),
         ],
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(16),
         child: Material(
           color: Colors.transparent,
           child: InkWell(
+            borderRadius: BorderRadius.circular(18),
             onTap: () => setState(() => _currentIndex = 1),
             splashColor: SpectraTheme.cyanWave.withValues(alpha: 0.15),
             highlightColor: Colors.white.withValues(alpha: 0.05),
@@ -454,15 +459,27 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
       behavior: HitTestBehavior.opaque,
       onTap: () => setState(() => _currentIndex = index),
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
+        duration: const Duration(milliseconds: 220),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.white.withValues(alpha: 0.12) : Colors.transparent,
+          color: isSelected ? SpectraTheme.cyanWave.withValues(alpha: 0.16) : Colors.transparent,
           borderRadius: BorderRadius.circular(20),
+          border: isSelected
+              ? Border.all(color: SpectraTheme.cyanWave.withValues(alpha: 0.4), width: 1)
+              : null,
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: SpectraTheme.cyanWave.withValues(alpha: 0.25),
+                    blurRadius: 12,
+                    spreadRadius: -2,
+                  ),
+                ]
+              : null,
         ),
         child: Icon(
           icon,
-          color: isSelected ? Colors.white : Colors.white38,
+          color: isSelected ? SpectraTheme.cyanWave : Colors.white38,
           size: 24,
         ),
       ),

@@ -3,6 +3,7 @@ import '../services/audio_player_service.dart';
 import '../services/spectra_dac_service.dart';
 import '../services/eq_bridge.dart' as eq_bridge;
 import '../theme/theme.dart';
+import '../widgets/liquid_glass.dart';
 
 class SpectraDacScreen extends StatefulWidget {
   final AudioPlayerService? playerService;
@@ -101,10 +102,13 @@ class _SpectraDacScreenState extends State<SpectraDacScreen> with SingleTickerPr
         builder: (context, _) {
           final isEnabled = dac.isEnabled;
 
-          return SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            child: Column(
+          return Stack(
+            children: [
+              const LiquidGlassBackdrop(),
+              SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Exclusive Master Audio Engine Mode Selector
@@ -175,13 +179,11 @@ class _SpectraDacScreenState extends State<SpectraDacScreen> with SingleTickerPr
 
                 // Sandbox Note
                 Center(
-                  child: Container(
+                  child: LiquidGlassContainer(
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.03),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: Colors.white10),
-                    ),
+                    borderRadius: 20,
+                    blur: 12,
+                    tintAlpha: 0.04,
                     child: Text(
                       dac.engineMode == AudioEngineMode.dspPreset
                           ? '🚗 DSP Mode Active: Pure Car Audio Acoustics (Zero DAC/Tube interference)'
@@ -194,7 +196,9 @@ class _SpectraDacScreenState extends State<SpectraDacScreen> with SingleTickerPr
                 const SizedBox(height: 32),
               ],
             ),
-          );
+          ),
+        ],
+      );
         },
       ),
     );
@@ -204,13 +208,10 @@ class _SpectraDacScreenState extends State<SpectraDacScreen> with SingleTickerPr
   Widget _buildModeSelector(SpectraDacService dac, bool isEnabled) {
     final isDsp = dac.engineMode == AudioEngineMode.dspPreset;
 
-    return Container(
+    return LiquidGlassContainer(
       padding: const EdgeInsets.all(4),
-      decoration: BoxDecoration(
-        color: const Color(0xFF141722),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white12),
-      ),
+      borderRadius: 16,
+      blur: 14,
       child: Row(
         children: [
           // Mode 1: Car DSP
@@ -642,23 +643,21 @@ class _SpectraDacScreenState extends State<SpectraDacScreen> with SingleTickerPr
 
         return Padding(
           padding: const EdgeInsets.only(bottom: 10),
-          child: InkWell(
-            borderRadius: BorderRadius.circular(16),
-            onTap: isEnabled ? () => dac.applyPreset(preset) : null,
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              padding: const EdgeInsets.all(14),
-              decoration: BoxDecoration(
-                color: isSelected
-                    ? color.withValues(alpha: 0.12)
-                    : Colors.white.withValues(alpha: 0.04),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: isSelected ? color : Colors.white10,
-                  width: isSelected ? 1.5 : 1.0,
-                ),
-              ),
-              child: Row(
+          child: LiquidGlassContainer(
+            borderRadius: 16,
+            blur: 14,
+            tintColor: isSelected ? color : Colors.white,
+            tintAlpha: isSelected ? 0.14 : 0.04,
+            customBorder: Border.all(
+              color: isSelected ? color : Colors.white.withValues(alpha: 0.12),
+              width: isSelected ? 1.5 : 1.0,
+            ),
+            child: InkWell(
+              borderRadius: BorderRadius.circular(16),
+              onTap: isEnabled ? () => dac.applyPreset(preset) : null,
+              child: Padding(
+                padding: const EdgeInsets.all(14),
+                child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
@@ -778,7 +777,8 @@ class _SpectraDacScreenState extends State<SpectraDacScreen> with SingleTickerPr
               ),
             ),
           ),
-        );
+        ),
+      );
       }).toList(),
     );
   }
@@ -811,13 +811,10 @@ class _SpectraDacScreenState extends State<SpectraDacScreen> with SingleTickerPr
 
   // ── 3. Analog Tube & Filter Stage ──────────────────────────────────────────
   Widget _buildAnalogStageCard(SpectraDacService dac, bool isEnabled) {
-    return Container(
+    return LiquidGlassContainer(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.04),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.white12),
-      ),
+      borderRadius: 18,
+      blur: 14,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1041,13 +1038,10 @@ class _SpectraDacScreenState extends State<SpectraDacScreen> with SingleTickerPr
 
   // ── 4. 10-Band Equalizer Card ──────────────────────────────────────────────
   Widget _build10BandEqualizerCard(SpectraDacService dac, bool isEnabled) {
-    return Container(
+    return LiquidGlassContainer(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 16),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.04),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.white12),
-      ),
+      borderRadius: 18,
+      blur: 14,
       child: Column(
         children: [
           // Sliders Row — scrollable so all 10 bands fit on any screen width
@@ -1161,13 +1155,13 @@ class _SpectraDacScreenState extends State<SpectraDacScreen> with SingleTickerPr
         final currentTrack = player.currentTrack;
         final isPlaying = player.isPlaying;
 
-        return Container(
+        return LiquidGlassContainer(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          decoration: BoxDecoration(
-            color: const Color(0xFF141A24),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFF00E5FF).withValues(alpha: 0.3)),
-          ),
+          borderRadius: 16,
+          blur: 14,
+          tintColor: const Color(0xFF00E5FF),
+          tintAlpha: 0.08,
+          customBorder: Border.all(color: const Color(0xFF00E5FF).withValues(alpha: 0.35)),
           child: Row(
             children: [
               Container(
@@ -1239,13 +1233,10 @@ class _SpectraDacScreenState extends State<SpectraDacScreen> with SingleTickerPr
 
   // ── Reverb Profiles Grid Card ───────────────────────────────────────────
   Widget _buildReverbProfilesCard(SpectraDacService dac, bool isEnabled) {
-    return Container(
+    return LiquidGlassContainer(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.04),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.white12),
-      ),
+      borderRadius: 18,
+      blur: 14,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

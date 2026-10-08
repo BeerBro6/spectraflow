@@ -7,6 +7,7 @@ import '../services/downloader_service.dart';
 import '../services/local_vault_service.dart';
 import '../services/search_stream_service.dart';
 import '../theme/theme.dart';
+import '../widgets/liquid_glass.dart';
 import 'now_playing_screen.dart';
 
 class SearchScreen extends StatefulWidget {
@@ -540,14 +541,25 @@ class _SearchScreenState extends State<SearchScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Search & Paste Bar ───────────────────────────────────────────
-            Container(
+            // ── Search & Paste Bar in Liquid Glass ───────────────────────────
+            LiquidGlassContainer(
               padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.06),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: Colors.white12),
-              ),
+              borderRadius: 22,
+              blur: 16,
+              tintColor: Colors.white,
+              tintAlpha: 0.08,
+              glowShadows: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.35),
+                  blurRadius: 18,
+                  offset: const Offset(0, 4),
+                ),
+                BoxShadow(
+                  color: SpectraTheme.cyanWave.withValues(alpha: 0.06),
+                  blurRadius: 14,
+                  offset: const Offset(0, 0),
+                ),
+              ],
               child: Row(
                 children: [
                   const Icon(Icons.search_rounded, color: SpectraTheme.cyanWave, size: 22),
@@ -582,7 +594,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
             const SizedBox(height: 12),
 
-            // ── Section 2: Active Downloads Progress Card (Option 3) ────────
+            // ── Section 2: Active Downloads Progress Card (Option 3) in Liquid Glass ──
             ListenableBuilder(
               listenable: widget.downloaderService,
               builder: (context, _) {
@@ -593,17 +605,21 @@ class _SearchScreenState extends State<SearchScreen> {
                 final completed = widget.downloaderService.completedCount;
                 final inProgress = tasks.any((t) => t.status == DownloadStatus.downloading);
 
-                return Container(
+                return LiquidGlassContainer(
                   margin: const EdgeInsets.only(bottom: 12),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.04),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: inProgress
-                          ? SpectraTheme.cyanWave.withValues(alpha: 0.35)
-                          : Colors.white10,
-                    ),
-                  ),
+                  borderRadius: 18,
+                  blur: 16,
+                  tintColor: inProgress ? SpectraTheme.cyanWave : Colors.white,
+                  tintAlpha: inProgress ? 0.10 : 0.05,
+                  glowShadows: inProgress
+                      ? [
+                          BoxShadow(
+                            color: SpectraTheme.cyanWave.withValues(alpha: 0.15),
+                            blurRadius: 16,
+                            offset: const Offset(0, 4),
+                          )
+                        ]
+                      : null,
                   child: Column(
                     children: [
                       // Header Row
@@ -798,17 +814,12 @@ class _SearchScreenState extends State<SearchScreen> {
                         final localMatch = LocalVaultService.instance.findLocalMatch(track);
                         final isAlreadyInLibrary = localMatch != null;
 
-                        return Container(
+                        return LiquidGlassContainer(
                           margin: const EdgeInsets.only(bottom: 10),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.04),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: isAlreadyInLibrary
-                                  ? Colors.greenAccent.withValues(alpha: 0.3)
-                                  : Colors.white.withValues(alpha: 0.08),
-                            ),
-                          ),
+                          borderRadius: 16,
+                          blur: 14,
+                          tintColor: isAlreadyInLibrary ? Colors.greenAccent : Colors.white,
+                          tintAlpha: 0.05,
                           child: ListTile(
                             contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                             leading: Stack(

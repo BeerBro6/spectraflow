@@ -9,6 +9,7 @@ import 'eq_test_screen.dart';
 import 'eq_screen.dart' show EqScreen, EqController;
 import '../services/permission_hub_service.dart';
 import '../services/first_launch_service.dart';
+import '../widgets/liquid_glass.dart';
 import 'spectra_dac_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
@@ -45,25 +46,25 @@ class SettingsScreen extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
       ),
-      body: ListView(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      body: Stack(
         children: [
-          // Section: Appearance & Persona Switch
-          const Text(
-            'App Experience & Audio Persona',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white70),
-          ),
-          const SizedBox(height: 12),
+          const LiquidGlassBackdrop(),
+          ListView(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            children: [
+              // Section: Appearance & Persona Switch
+              const Text(
+                'App Experience & Audio Persona',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white70),
+              ),
+              const SizedBox(height: 12),
 
-          const PersonalizedNameTile(),
-          const SizedBox(height: 12),
+              const PersonalizedNameTile(),
+              const SizedBox(height: 12),
 
-          Container(
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.04),
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: Colors.white12),
-            ),
+          LiquidGlassContainer(
+            borderRadius: 18,
+            blur: 14,
             child: Column(
               children: [
                 // Option 1: Classic Minimal
@@ -115,13 +116,10 @@ class SettingsScreen extends StatelessWidget {
           Builder(builder: (context) {
             final preset = EqService.instance.currentPreset;
             final isEnabled = EqService.instance.isEnabled;
-            return Container(
+            return LiquidGlassContainer(
               padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.04),
-                borderRadius: BorderRadius.circular(18),
-                border: Border.all(color: Colors.white12),
-              ),
+              borderRadius: 18,
+              blur: 14,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -286,13 +284,10 @@ class SettingsScreen extends StatelessWidget {
             listenable: LocalVaultService.instance,
             builder: (context, _) {
               final vault = LocalVaultService.instance;
-              return Container(
+              return LiquidGlassContainer(
                 padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.04),
-                  borderRadius: BorderRadius.circular(18),
-                  border: Border.all(color: Colors.white12),
-                ),
+                borderRadius: 18,
+                blur: 14,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -401,13 +396,10 @@ class SettingsScreen extends StatelessWidget {
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white70),
           ),
           const SizedBox(height: 12),
-          Container(
+          LiquidGlassContainer(
             padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.04),
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(color: Colors.white12),
-            ),
+            borderRadius: 18,
+            blur: 14,
             child: const Column(
               children: [
                 Row(
@@ -472,13 +464,10 @@ class SettingsScreen extends StatelessWidget {
               listenable: PermissionHubService.instance,
               builder: (context, _) {
                 final status = PermissionHubService.instance.status;
-                return Container(
+                return LiquidGlassContainer(
                   padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.04),
-                    borderRadius: BorderRadius.circular(18),
-                    border: Border.all(color: Colors.white12),
-                  ),
+                  borderRadius: 18,
+                  blur: 14,
                   child: Column(
                     children: [
                       _buildDiagnosticRow(
@@ -539,6 +528,8 @@ class SettingsScreen extends StatelessWidget {
               ],
             ),
           ),
+        ],
+      ),
         ],
       ),
     );
@@ -754,12 +745,9 @@ class _PersonalizedNameTileState extends State<PersonalizedNameTile> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.04),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: Colors.white12),
-      ),
+    return LiquidGlassContainer(
+      borderRadius: 18,
+      blur: 14,
       child: ListTile(
         leading: Container(
           padding: const EdgeInsets.all(8),
