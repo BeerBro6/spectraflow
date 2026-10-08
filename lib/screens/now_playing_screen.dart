@@ -553,12 +553,14 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
-                  stops: const [0.0, 0.45, 0.85, 1.0],
+                  stops: const [0.0, 0.40, 0.75, 1.0],
                   colors: [
-                    ambientColors[0].withValues(alpha: 0.85),
-                    const Color(0xFF090B10),
-                    const Color(0xFF07080D),
-                    ambientColors.length > 1 ? ambientColors[1].withValues(alpha: 0.60) : const Color(0xFF090B10),
+                    ambientColors[0].withValues(alpha: 0.75),
+                    const Color(0xFF0D101A),
+                    ambientColors.length > 1
+                        ? ambientColors[1].withValues(alpha: 0.35)
+                        : const Color(0xFF0A1424),
+                    ambientColors[0].withValues(alpha: 0.45),
                   ],
                 ),
               ),
@@ -1220,13 +1222,8 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
         ? eq.currentPreset!.type
         : EqPresetType.flat;
 
-    return LiquidGlassContainer(
-      margin: const EdgeInsets.symmetric(horizontal: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-      borderRadius: 16,
-      blur: 14,
-      tintColor: Colors.white,
-      tintAlpha: 0.05,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
@@ -1283,49 +1280,52 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
     Color selectedColor = SpectraTheme.cyanWave,
     required VoidCallback onTap,
   }) {
-    return LiquidGlassPill(
-      isSelected: isSelected,
-      accentColor: selectedColor,
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
       onTap: onTap,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            icon,
-            size: 14,
-            color: isSelected ? selectedColor : Colors.white54,
-          ),
-          const SizedBox(width: 4),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 11,
-              fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-              color: isSelected ? Colors.white : Colors.white60,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: isSelected ? selectedColor.withValues(alpha: 0.22) : Colors.white.withValues(alpha: 0.04),
+          borderRadius: BorderRadius.circular(16),
+          border: isSelected ? Border.all(color: selectedColor.withValues(alpha: 0.5), width: 1) : null,
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: selectedColor.withValues(alpha: 0.25),
+                    blurRadius: 10,
+                  ),
+                ]
+              : null,
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 13,
+              color: isSelected ? selectedColor : Colors.white54,
             ),
-          ),
-        ],
+            const SizedBox(width: 5),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                color: isSelected ? Colors.white : Colors.white60,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   /// Audiophile quick DSP bar in Liquid Glass
   Widget _buildAudiophileStudioQuickBar(BuildContext context) {
-    return LiquidGlassContainer(
-      margin: const EdgeInsets.symmetric(horizontal: 8),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      borderRadius: 16,
-      blur: 14,
-      tintColor: SpectraTheme.cyanWave,
-      tintAlpha: 0.10,
-      glowShadows: [
-        BoxShadow(
-          color: SpectraTheme.cyanWave.withValues(alpha: 0.16),
-          blurRadius: 14,
-          offset: const Offset(0, 2),
-        ),
-      ],
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -1334,7 +1334,7 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
               Container(
                 padding: const EdgeInsets.all(4),
                 decoration: BoxDecoration(
-                  color: SpectraTheme.cyanWave.withValues(alpha: 0.25),
+                  color: SpectraTheme.cyanWave.withValues(alpha: 0.20),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: const Icon(Icons.tune_rounded, size: 14, color: SpectraTheme.cyanWave),

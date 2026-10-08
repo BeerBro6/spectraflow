@@ -268,13 +268,14 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
     ];
 
     return Scaffold(
+      extendBody: true,
       body: IndexedStack(
         index: _currentIndex,
         children: screens,
       ),
       // Sleek floating bottom capsule menu with floating mini-player
       bottomNavigationBar: Container(
-        color: SpectraTheme.obsidian,
+        color: Colors.transparent,
         padding: const EdgeInsets.only(left: 14, right: 14, bottom: 18, top: 4),
         child: SafeArea(
           top: false,
@@ -312,6 +313,7 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
                 ],
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     _buildNavItem(icon: Icons.grid_view_rounded, index: 0, label: 'Library'),
                     _buildNavItem(icon: Icons.equalizer_rounded, index: 1, label: 'Player'),
@@ -458,29 +460,33 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () => setState(() => _currentIndex = index),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 220),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected ? SpectraTheme.cyanWave.withValues(alpha: 0.16) : Colors.transparent,
-          borderRadius: BorderRadius.circular(20),
-          border: isSelected
-              ? Border.all(color: SpectraTheme.cyanWave.withValues(alpha: 0.4), width: 1)
-              : null,
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: SpectraTheme.cyanWave.withValues(alpha: 0.25),
-                    blurRadius: 12,
-                    spreadRadius: -2,
-                  ),
-                ]
-              : null,
-        ),
-        child: Icon(
-          icon,
-          color: isSelected ? SpectraTheme.cyanWave : Colors.white38,
-          size: 24,
+      child: Center(
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 220),
+          width: 52,
+          height: 44,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: isSelected ? SpectraTheme.cyanWave.withValues(alpha: 0.16) : Colors.transparent,
+            borderRadius: BorderRadius.circular(22),
+            border: isSelected
+                ? Border.all(color: SpectraTheme.cyanWave.withValues(alpha: 0.4), width: 1)
+                : null,
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: SpectraTheme.cyanWave.withValues(alpha: 0.25),
+                      blurRadius: 12,
+                      spreadRadius: -2,
+                    ),
+                  ]
+                : null,
+          ),
+          child: Icon(
+            icon,
+            color: isSelected ? SpectraTheme.cyanWave : Colors.white38,
+            size: 24,
+          ),
         ),
       ),
     );

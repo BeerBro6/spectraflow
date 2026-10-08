@@ -55,25 +55,27 @@ class LiquidGlassContainer extends StatelessWidget {
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
             child: Container(
+              alignment: Alignment.center,
               padding: padding,
               decoration: BoxDecoration(
                 borderRadius: r,
                 border: customBorder ??
                     Border.all(
-                      color: Colors.white.withValues(alpha: 0.14),
-                      width: 1.0,
+                      color: Colors.white.withValues(alpha: 0.08),
+                      width: 0.8,
                     ),
                 gradient: LinearGradient(
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    effectiveTintColor.withValues(alpha: tintAlpha + 0.04),
-                    effectiveTintColor.withValues(alpha: (tintAlpha * 0.4).clamp(0.01, 1.0)),
+                    effectiveTintColor.withValues(alpha: tintAlpha + 0.03),
+                    effectiveTintColor.withValues(alpha: (tintAlpha * 0.35).clamp(0.01, 1.0)),
                   ],
                 ),
               ),
               child: hasSheen
                   ? Stack(
+                      alignment: Alignment.center,
                       children: [
                         Positioned.fill(
                           child: IgnorePointer(
@@ -82,17 +84,18 @@ class LiquidGlassContainer extends StatelessWidget {
                                 borderRadius: r,
                                 gradient: LinearGradient(
                                   begin: Alignment.topLeft,
-                                  end: Alignment.center,
+                                  end: Alignment.bottomRight,
                                   colors: [
-                                    Colors.white.withValues(alpha: 0.12),
+                                    Colors.white.withValues(alpha: 0.09),
                                     Colors.transparent,
                                   ],
+                                  stops: const [0.0, 0.45],
                                 ),
                               ),
                             ),
                           ),
                         ),
-                        ?child,
+                        if (child != null) Center(child: child),
                       ],
                     )
                   : child,
@@ -156,12 +159,12 @@ class LiquidGlassPill extends StatelessWidget {
                 borderRadius: r,
                 color: isSelected
                     ? color.withValues(alpha: 0.18)
-                    : Colors.white.withValues(alpha: 0.05),
+                    : Colors.white.withValues(alpha: 0.04),
                 border: Border.all(
                   color: isSelected
                       ? color.withValues(alpha: 0.65)
-                      : Colors.white.withValues(alpha: 0.14),
-                  width: 1.0,
+                      : Colors.white.withValues(alpha: 0.06),
+                  width: 0.8,
                 ),
               ),
               child: child,
@@ -231,15 +234,15 @@ class LiquidGlassCard extends StatelessWidget {
                   decoration: BoxDecoration(
                     borderRadius: r,
                     border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.12),
-                      width: 1.0,
+                      color: Colors.white.withValues(alpha: 0.08),
+                      width: 0.8,
                     ),
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                       colors: [
-                        (tintColor ?? Colors.white).withValues(alpha: 0.09),
-                        (tintColor ?? Colors.white).withValues(alpha: 0.025),
+                        (tintColor ?? Colors.white).withValues(alpha: 0.08),
+                        (tintColor ?? Colors.white).withValues(alpha: 0.02),
                       ],
                     ),
                   ),
@@ -268,7 +271,7 @@ class LiquidGlassBackdrop extends StatelessWidget {
     this.child,
   });
 
-  Widget _glowOrb(Color color, double size) => IgnorePointer(
+  Widget _glowOrb(Color color, double size, [double opacity = 0.28]) => IgnorePointer(
         child: Container(
           width: size,
           height: size,
@@ -276,7 +279,7 @@ class LiquidGlassBackdrop extends StatelessWidget {
             shape: BoxShape.circle,
             gradient: RadialGradient(
               colors: [
-                color.withValues(alpha: 0.28),
+                color.withValues(alpha: opacity),
                 color.withValues(alpha: 0.0),
               ],
             ),
@@ -289,16 +292,43 @@ class LiquidGlassBackdrop extends StatelessWidget {
     return Stack(
       fit: StackFit.expand,
       children: [
-        const ColoredBox(color: SpectraTheme.obsidian),
-        Positioned(
-          top: -140,
-          left: -120,
-          child: _glowOrb(primaryOrb, 440),
+        // Rich deep indigo/obsidian gradient base instead of flat pitch black
+        const DecoratedBox(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFF0F121D),
+                Color(0xFF090A11),
+                Color(0xFF0D0E17),
+              ],
+            ),
+          ),
         ),
+        // Top-left neon cyan diffuse orb
         Positioned(
-          bottom: -160,
-          right: -130,
-          child: _glowOrb(secondaryOrb, 460),
+          top: -60,
+          left: -70,
+          child: _glowOrb(primaryOrb, 380, 0.26),
+        ),
+        // Middle-right chromatic magenta / violet orb (illuminates central content & cards)
+        Positioned(
+          top: 220,
+          right: -80,
+          child: _glowOrb(secondaryOrb, 360, 0.22),
+        ),
+        // Lower-left electric sapphire orb (illuminates bottom dock & controls)
+        Positioned(
+          bottom: 30,
+          left: -60,
+          child: _glowOrb(const Color(0xFF0077B6), 340, 0.25),
+        ),
+        // Bottom-right secondary cyan aura
+        Positioned(
+          bottom: -70,
+          right: -50,
+          child: _glowOrb(primaryOrb, 300, 0.20),
         ),
         ?child,
       ],

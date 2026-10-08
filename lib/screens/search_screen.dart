@@ -477,7 +477,10 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: SpectraTheme.obsidian,
       appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
         title: const Text('Search & Download'),
         actions: [
           // Format Selector Badge (Changes global default)
@@ -536,9 +539,12 @@ class _SearchScreenState extends State<SearchScreen> {
           ),
         ],
       ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0),
-        child: Column(
+      body: Stack(
+        children: [
+          const LiquidGlassBackdrop(),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // ── Search & Paste Bar in Liquid Glass ───────────────────────────
@@ -807,6 +813,7 @@ class _SearchScreenState extends State<SearchScreen> {
                   listenable: LocalVaultService.instance,
                   builder: (context, _) {
                     return ListView.builder(
+                      padding: const EdgeInsets.only(bottom: 120),
                       itemCount: _searchResults.length,
                       itemBuilder: (context, idx) {
                         final track = _searchResults[idx];
@@ -814,12 +821,12 @@ class _SearchScreenState extends State<SearchScreen> {
                         final localMatch = LocalVaultService.instance.findLocalMatch(track);
                         final isAlreadyInLibrary = localMatch != null;
 
-                        return LiquidGlassContainer(
-                          margin: const EdgeInsets.only(bottom: 10),
-                          borderRadius: 16,
-                          blur: 14,
-                          tintColor: isAlreadyInLibrary ? Colors.greenAccent : Colors.white,
-                          tintAlpha: 0.05,
+                        return Container(
+                          margin: const EdgeInsets.only(bottom: 6),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.04),
+                            borderRadius: BorderRadius.circular(14),
+                          ),
                           child: ListTile(
                             contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                             leading: Stack(
@@ -971,7 +978,9 @@ class _SearchScreenState extends State<SearchScreen> {
           ],
         ),
       ),
-    );
+    ],
+  ),
+);
   }
 }
 

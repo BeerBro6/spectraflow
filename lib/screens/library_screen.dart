@@ -804,10 +804,13 @@ class _LibraryScreenState extends State<LibraryScreen> {
               ),
             ],
           ),
-          body: allTracks.isEmpty && !vault.isScanning
-              ? _buildEmptyVaultView(vault)
-              : ListView(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6.0),
+          body: Stack(
+            children: [
+              const LiquidGlassBackdrop(),
+              allTracks.isEmpty && !vault.isScanning
+                  ? _buildEmptyVaultView(vault)
+                  : ListView(
+                  padding: const EdgeInsets.only(left: 16.0, right: 16.0, top: 6.0, bottom: 120.0),
                   children: [
                     if (vault.isScanning)
                       Container(
@@ -1062,6 +1065,8 @@ class _LibraryScreenState extends State<LibraryScreen> {
                     const SizedBox(height: 30),
                   ],
                 ),
+            ],
+          ),
         );
       },
     );

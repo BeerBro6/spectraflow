@@ -50,7 +50,7 @@ class SettingsScreen extends StatelessWidget {
         children: [
           const LiquidGlassBackdrop(),
           ListView(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: const EdgeInsets.only(left: 16, right: 16, top: 12, bottom: 120),
             children: [
               // Section: Appearance & Persona Switch
               const Text(
