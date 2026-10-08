@@ -46,9 +46,9 @@ class _SpectraDacScreenState extends State<SpectraDacScreen> with SingleTickerPr
     final dac = SpectraDacService.instance;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF0D0F14), // Deep vintage chassis black
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF14171F),
+        backgroundColor: Colors.transparent,
         elevation: 0,
         title: Row(
           children: [
@@ -648,10 +648,12 @@ class _SpectraDacScreenState extends State<SpectraDacScreen> with SingleTickerPr
             blur: 14,
             tintColor: isSelected ? color : Colors.white,
             tintAlpha: isSelected ? 0.14 : 0.04,
-            customBorder: Border.all(
-              color: isSelected ? color : Colors.white.withValues(alpha: 0.12),
-              width: isSelected ? 1.5 : 1.0,
-            ),
+            customBorder: isSelected
+                ? Border.all(
+                    color: color.withValues(alpha: 0.8),
+                    width: 1.2,
+                  )
+                : null,
             child: InkWell(
               borderRadius: BorderRadius.circular(16),
               onTap: isEnabled ? () => dac.applyPreset(preset) : null,
@@ -784,23 +786,18 @@ class _SpectraDacScreenState extends State<SpectraDacScreen> with SingleTickerPr
   }
 
   Widget _buildAcousticTag({required IconData icon, required String label, required Color color}) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: color.withValues(alpha: 0.25), width: 0.8),
-      ),
+    return Padding(
+      padding: const EdgeInsets.only(right: 8, bottom: 2),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 11, color: color),
+          Icon(icon, size: 12, color: color.withValues(alpha: 0.85)),
           const SizedBox(width: 4),
           Text(
             label,
             style: TextStyle(
-              color: color,
-              fontSize: 9.5,
+              color: color.withValues(alpha: 0.9),
+              fontSize: 10,
               fontWeight: FontWeight.w600,
             ),
           ),

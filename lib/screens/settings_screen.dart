@@ -71,7 +71,7 @@ class SettingsScreen extends StatelessWidget {
                 _buildModeTile(
                   mode: LibraryViewMode.classic,
                   title: 'Classic Minimal',
-                  subtitle: 'Spotify-style clean simplicity. 1-tap quick presets (🚗 Car Audio, 🔊 Bass, 🎙️ Vocal, ⚪ Flat), auto-volume leveling, and zero technical clutter.',
+                  subtitle: 'Streamlined clean simplicity. 1-tap quick presets (🚗 Car Audio, 🔊 Bass, 🎙️ Vocal, ⚪ Flat), auto-volume leveling, and zero technical clutter.',
                   hasBadge: false,
                   accentColor: const Color(0xFF10B981),
                 ),
@@ -80,7 +80,7 @@ class SettingsScreen extends StatelessWidget {
                 _buildModeTile(
                   mode: LibraryViewMode.audiophileHybrid,
                   title: 'Audiophile Studio Mode',
-                  subtitle: 'Poweramp & UAPP studio mastery. Live kHz/bit-depth spec pill, 10-band parametric EQ, Pioneer 7600/Alpine Car DSP matrix, and direct bit-perfect DAC routing.',
+                  subtitle: 'Master audiophile studio control. Live kHz/bit-depth spec pill, 10-band parametric EQ, analog Car DSP acoustic matrix, and direct bit-perfect DAC routing.',
                   hasBadge: true,
                   accentColor: SpectraTheme.cyanWave,
                 ),
@@ -103,7 +103,6 @@ class SettingsScreen extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: SpectraTheme.cyanWave.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(4),
-                  border: Border.all(color: SpectraTheme.cyanWave.withValues(alpha: 0.4)),
                 ),
                 child: const Text(
                   'NEW',
@@ -215,7 +214,7 @@ class SettingsScreen extends StatelessWidget {
                           ],
                         ),
                         borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: const Color(0xFFFF8F00).withValues(alpha: 0.5)),
+                        border: Border.all(color: const Color(0xFFFF8F00).withValues(alpha: 0.18)),
                       ),
                       child: Row(
                         children: [

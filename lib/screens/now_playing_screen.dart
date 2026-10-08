@@ -1,3 +1,4 @@
+import 'dart:ui' show ImageFilter;
 import 'package:flutter/material.dart';
 import 'package:palette_generator/palette_generator.dart';
 import '../models/track.dart';
@@ -8,9 +9,9 @@ import '../services/playlist_service.dart';
 import '../theme/theme.dart';
 import '../widgets/track_artwork.dart';
 import 'library_screen.dart' show LibraryViewMode;
-import 'eq_test_screen.dart' show EqService, EqPresetType;
 import 'eq_screen.dart' show EqScreen;
 import '../widgets/liquid_glass.dart';
+import '../widgets/liquid_glass_player_capsule.dart';
 
 class NowPlayingScreen extends StatefulWidget {
   final AudioPlayerService playerService;
@@ -402,12 +403,6 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
     );
   }
 
-  String _formatDuration(Duration d) {
-    final minutes = d.inMinutes.remainder(60).toString().padLeft(2, '0');
-    final seconds = d.inSeconds.remainder(60).toString().padLeft(2, '0');
-    return '$minutes:$seconds';
-  }
-
   // Extracts real dominant & vibrant tones from album artwork image, caching results
   void _extractPaletteColors(Track track) async {
     final artUrl = track.artworkUrl;
@@ -504,9 +499,6 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
             );
 
         final position = widget.playerService.position;
-        final duration = widget.playerService.duration.inSeconds > 0
-            ? widget.playerService.duration
-            : track.duration;
 
         _extractPaletteColors(track);
         final ambientColors = _deriveAmbientColors(track);
@@ -622,586 +614,314 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
                       ],
                     ),
 
-                    const SizedBox(height: 8),
+                    // 24-BIT / 192kHz BIT-PERFECT FLAC Top Spec Pill matching concept art
+                    Container(
+                      margin: const EdgeInsets.only(top: 4, bottom: 8),
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(20),
+                        color: Colors.white.withValues(alpha: 0.05),
+                        border: Border.all(
+                          color: const Color(0xFF00F2FE).withValues(alpha: 0.5),
+                          width: 1.2,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF00F2FE).withValues(alpha: 0.25),
+                            blurRadius: 16,
+                          ),
+                          BoxShadow(
+                            color: const Color(0xFFFF007F).withValues(alpha: 0.2),
+                            blurRadius: 16,
+                            offset: const Offset(4, 0),
+                          ),
+                        ],
+                      ),
+                      child: Text(
+                        track.format == AudioFormat.flac
+                            ? '24-BIT / 192kHz BIT-PERFECT FLAC'
+                            : (track.format == AudioFormat.opus
+                                ? '48kHz HIGH-RES OPUS'
+                                : '320kbps HI-FI AUDIO'),
+                        style: const TextStyle(
+                          fontFamily: 'monospace',
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.8,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
 
-                    // SWIPEABLE HERO AREA: Swipe between Album Art and Synced Lyrics
+                    // MASTER TABLET HERO FRAME (matching liquid_glass_ui_1791451290858.jpg)
                     Expanded(
-                      flex: 5,
-                      child: PageView(
-                        controller: _pageController,
-                        onPageChanged: (idx) => setState(() => _activePageIndex = idx),
-                        children: [
-                          // PAGE 1: Album Artwork with Liquid Glass Frame and glowing ambient backlight
-                          GestureDetector(
-                            behavior: HitTestBehavior.opaque,
-                            onTap: () {
-                              _pageController.animateToPage(
-                                1,
-                                duration: const Duration(milliseconds: 350),
-                                curve: Curves.easeInOutCubic,
-                              );
-                            },
-                            child: Center(
-                              child: Container(
-                                width: 296,
-                                height: 296,
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(30),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: ambientColors[0].withValues(alpha: 0.55),
-                                      blurRadius: 48,
-                                      spreadRadius: 4,
-                                    ),
-                                    BoxShadow(
-                                      color: ambientColors.length > 1
-                                          ? ambientColors[1].withValues(alpha: 0.45)
-                                          : SpectraTheme.cyanWave.withValues(alpha: 0.3),
-                                      blurRadius: 56,
-                                      spreadRadius: -2,
-                                    ),
-                                  ],
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(vertical: 4),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(32),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.65),
+                              blurRadius: 36,
+                              offset: const Offset(0, 12),
+                            ),
+                            // Radiant Electric Cyan bloom on left edge
+                            BoxShadow(
+                              color: const Color(0xFF00F2FE).withValues(alpha: 0.38),
+                              blurRadius: 42,
+                              spreadRadius: 2,
+                              offset: const Offset(-8, -2),
+                            ),
+                            // Radiant Hot Magenta bloom on right edge
+                            BoxShadow(
+                              color: const Color(0xFFFF007F).withValues(alpha: 0.38),
+                              blurRadius: 42,
+                              spreadRadius: 2,
+                              offset: const Offset(8, 2),
+                            ),
+                          ],
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(32),
+                          child: BackdropFilter(
+                            filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
+                            child: Container(
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(32),
+                                border: Border.all(
+                                  color: Colors.white.withValues(alpha: 0.16),
+                                  width: 1.2,
                                 ),
-                                child: RepaintBoundary(
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(30),
-                                    child: Stack(
-                                      alignment: Alignment.center,
-                                      children: [
-                                        TrackArtwork(
-                                          key: ValueKey(track.artworkUrl ?? track.id),
-                                          artworkUrl: track.artworkUrl,
-                                          width: 296,
-                                          height: 296,
-                                          fit: BoxFit.cover,
+                                gradient: LinearGradient(
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                  colors: [
+                                    Colors.white.withValues(alpha: 0.10),
+                                    const Color(0xFF101524).withValues(alpha: 0.72),
+                                    const Color(0xFF070A14).withValues(alpha: 0.88),
+                                  ],
+                                  stops: const [0.0, 0.45, 1.0],
+                                ),
+                              ),
+                              child: Stack(
+                                children: [
+                                  // Top specular glass highlight
+                                  Positioned(
+                                    top: 0,
+                                    left: 32,
+                                    right: 32,
+                                    height: 1.2,
+                                    child: Container(
+                                      decoration: BoxDecoration(
+                                        gradient: LinearGradient(
+                                          colors: [
+                                            Colors.transparent,
+                                            Colors.white.withValues(alpha: 0.40),
+                                            const Color(0xFF00F2FE).withValues(alpha: 0.40),
+                                            Colors.transparent,
+                                          ],
+                                          stops: const [0.0, 0.3, 0.7, 1.0],
                                         ),
-                                        // Specular Liquid Glass refractive sheen
-                                        IgnorePointer(
-                                          child: Container(
-                                            decoration: BoxDecoration(
-                                              borderRadius: BorderRadius.circular(30),
-                                              border: Border.all(
-                                                color: Colors.white.withValues(alpha: 0.24),
-                                                width: 1.5,
-                                              ),
-                                              gradient: LinearGradient(
-                                                begin: Alignment.topLeft,
-                                                end: Alignment.bottomRight,
-                                                colors: [
-                                                  Colors.white.withValues(alpha: 0.16),
-                                                  Colors.transparent,
-                                                  Colors.black.withValues(alpha: 0.22),
-                                                ],
-                                                stops: const [0.0, 0.45, 1.0],
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ],
+                                      ),
                                     ),
                                   ),
-                                ),
-                              ),
-                            ),
-                          ),
+                                  Padding(
+                                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 14),
+                                    child: Column(
+                                      children: [
+                                        // Swipeable PageView: Album Art <-> Synced Lyrics
+                                        Expanded(
+                                          child: PageView(
+                                            controller: _pageController,
+                                            onPageChanged: (idx) => setState(() => _activePageIndex = idx),
+                                            children: [
+                                              // PAGE 1: Album Artwork with Liquid Glass Sheen
+                                              GestureDetector(
+                                                behavior: HitTestBehavior.opaque,
+                                                onTap: () {
+                                                  _pageController.animateToPage(
+                                                    1,
+                                                    duration: const Duration(milliseconds: 350),
+                                                    curve: Curves.easeInOutCubic,
+                                                  );
+                                                },
+                                                child: Center(
+                                                  child: AspectRatio(
+                                                    aspectRatio: 1.0,
+                                                    child: ClipRRect(
+                                                      borderRadius: BorderRadius.circular(22),
+                                                      child: Stack(
+                                                        fit: StackFit.expand,
+                                                        children: [
+                                                          TrackArtwork(
+                                                            key: ValueKey(track.artworkUrl ?? track.id),
+                                                            artworkUrl: track.artworkUrl,
+                                                            fit: BoxFit.cover,
+                                                          ),
+                                                          // Specular Liquid Glass refractive sheen
+                                                          IgnorePointer(
+                                                            child: Container(
+                                                              decoration: BoxDecoration(
+                                                                borderRadius: BorderRadius.circular(22),
+                                                                border: Border.all(
+                                                                  color: Colors.white.withValues(alpha: 0.20),
+                                                                  width: 1.0,
+                                                                ),
+                                                                gradient: LinearGradient(
+                                                                  begin: Alignment.topLeft,
+                                                                  end: Alignment.bottomRight,
+                                                                  colors: [
+                                                                    Colors.white.withValues(alpha: 0.16),
+                                                                    Colors.transparent,
+                                                                    Colors.black.withValues(alpha: 0.20),
+                                                                  ],
+                                                                  stops: const [0.0, 0.4, 1.0],
+                                                                ),
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ],
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
 
-                          // PAGE 2: Synced Interactive Karaoke Lyrics in Liquid Glass Container
-                          LiquidGlassContainer(
-                            margin: const EdgeInsets.symmetric(vertical: 8),
-                            padding: const EdgeInsets.all(16),
-                            borderRadius: 24,
-                            blur: 18,
-                            tintColor: ambientColors[0],
-                            tintAlpha: 0.08,
-                            glowShadows: [
-                              BoxShadow(
-                                color: ambientColors[0].withValues(alpha: 0.25),
-                                blurRadius: 28,
-                                spreadRadius: -4,
-                              ),
-                            ],
-                            child: _lyrics.isEmpty
-                                ? Center(
-                                    child: _isLoadingLyrics
-                                        ? Column(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              const CircularProgressIndicator(
-                                                strokeWidth: 2,
-                                                color: SpectraTheme.cyanWave,
-                                              ),
-                                              const SizedBox(height: 16),
-                                              Text(
-                                                'Searching synced lyrics for "${track.title}"...',
-                                                textAlign: TextAlign.center,
-                                                style: const TextStyle(color: Colors.white70, fontSize: 13),
-                                              ),
-                                              const SizedBox(height: 6),
-                                              const Text(
-                                                '(Swipe left for album artwork)',
-                                                style: TextStyle(color: Colors.white38, fontSize: 11),
-                                              ),
-                                            ],
-                                          )
-                                        : Column(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              const Icon(
-                                                Icons.lyrics_outlined,
-                                                size: 40,
-                                                color: Colors.white24,
-                                              ),
-                                              const SizedBox(height: 12),
-                                              const Text(
-                                                'Lyrics not available for this track',
-                                                textAlign: TextAlign.center,
-                                                style: TextStyle(
-                                                  color: Colors.white70,
-                                                  fontWeight: FontWeight.w600,
-                                                  fontSize: 14,
-                                                ),
-                                              ),
-                                              const SizedBox(height: 6),
-                                              Text(
-                                                'No synced or text lyrics found for "${track.title}"',
-                                                textAlign: TextAlign.center,
-                                                style: const TextStyle(color: Colors.white38, fontSize: 11),
-                                              ),
-                                              const SizedBox(height: 16),
-                                              OutlinedButton.icon(
-                                                onPressed: _loadLyrics,
-                                                icon: const Icon(Icons.refresh_rounded, size: 14, color: SpectraTheme.cyanWave),
-                                                label: const Text(
-                                                  'Retry Search',
-                                                  style: TextStyle(color: SpectraTheme.cyanWave, fontSize: 12),
-                                                ),
-                                                style: OutlinedButton.styleFrom(
-                                                  side: BorderSide(color: SpectraTheme.cyanWave.withValues(alpha: 0.3)),
-                                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                                                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                                                ),
-                                              ),
+                                              // PAGE 2: Synced Interactive Karaoke Lyrics
+                                              _buildLyricsView(track, isSyncedLrc, adjustedPosition),
                                             ],
                                           ),
-                                  )
-                                : Column(
-                                    children: [
-                                      // Lyrics status pill (Synced Karaoke vs Unsynced Text)
-                                      Padding(
-                                        padding: const EdgeInsets.only(bottom: 8.0),
-                                        child: Row(
+                                        ),
+
+                                        const SizedBox(height: 10),
+
+                                        // Subtle Page Indicator Dots
+                                        Row(
                                           mainAxisAlignment: MainAxisAlignment.center,
                                           children: [
-                                            Icon(
-                                              isSyncedLrc ? Icons.graphic_eq_rounded : Icons.menu_book_rounded,
-                                              size: 13,
-                                              color: isSyncedLrc ? SpectraTheme.cyanWave : Colors.white38,
+                                            AnimatedContainer(
+                                              duration: const Duration(milliseconds: 250),
+                                              width: _activePageIndex == 0 ? 16 : 6,
+                                              height: 5,
+                                              decoration: BoxDecoration(
+                                                color: _activePageIndex == 0 ? SpectraTheme.cyanWave : Colors.white24,
+                                                borderRadius: BorderRadius.circular(3),
+                                              ),
                                             ),
                                             const SizedBox(width: 6),
-                                            Text(
-                                              isSyncedLrc ? 'SYNCED KARAOKE' : 'UNSYNCED LYRICS',
-                                              style: TextStyle(
-                                                color: isSyncedLrc ? SpectraTheme.cyanWave : Colors.white38,
-                                                fontSize: 10,
-                                                fontWeight: FontWeight.w700,
-                                                letterSpacing: 1.2,
+                                            AnimatedContainer(
+                                              duration: const Duration(milliseconds: 250),
+                                              width: _activePageIndex == 1 ? 16 : 6,
+                                              height: 5,
+                                              decoration: BoxDecoration(
+                                                color: _activePageIndex == 1 ? SpectraTheme.cyanWave : Colors.white24,
+                                                borderRadius: BorderRadius.circular(3),
                                               ),
                                             ),
                                           ],
                                         ),
-                                      ),
-                                      Expanded(
-                                        child: ListView.builder(
-                                          controller: _lyricsScrollController,
-                                          itemCount: _lyrics.length,
-                                          itemBuilder: (context, idx) {
-                                            final line = _lyrics[idx];
-                                            final isCurrent = isSyncedLrc &&
-                                                adjustedPosition >= line.timestamp &&
-                                                (idx == _lyrics.length - 1 ||
-                                                    adjustedPosition < _lyrics[idx + 1].timestamp);
 
-                                            return GestureDetector(
-                                              onTap: isSyncedLrc
-                                                  ? () {
-                                                      widget.playerService.seek(line.timestamp);
-                                                    }
-                                                  : null,
-                                              child: AnimatedContainer(
-                                                duration: const Duration(milliseconds: 350),
-                                                curve: Curves.easeOutCubic,
-                                                margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
-                                                padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
-                                                color: Colors.transparent,
-                                                child: AnimatedDefaultTextStyle(
-                                                  duration: const Duration(milliseconds: 300),
-                                                  curve: Curves.easeOutCubic,
-                                                  style: TextStyle(
-                                                    fontSize: isCurrent
-                                                        ? 22
-                                                        : (isSyncedLrc ? 16 : 17),
-                                                    fontWeight: isCurrent
-                                                        ? FontWeight.w800
-                                                        : (isSyncedLrc ? FontWeight.w500 : FontWeight.w600),
-                                                    color: isCurrent
-                                                        ? SpectraTheme.cyanWave
-                                                        : (isSyncedLrc ? Colors.white30 : Colors.white70),
-                                                    letterSpacing: 0.3,
-                                                    height: 1.45,
-                                                    shadows: isCurrent
-                                                        ? [
-                                                            Shadow(
-                                                              color: SpectraTheme.cyanWave.withValues(alpha: 0.6),
-                                                              blurRadius: 18,
-                                                            ),
-                                                            Shadow(
-                                                              color: SpectraTheme.cyanWave.withValues(alpha: 0.3),
-                                                              blurRadius: 32,
-                                                            ),
-                                                          ]
-                                                        : null,
+                                        const SizedBox(height: 10),
+
+                                        // Track Info & Favorite Heart Row (inside the Master Tablet)
+                                        Row(
+                                          crossAxisAlignment: CrossAxisAlignment.center,
+                                          children: [
+                                            Expanded(
+                                              child: Column(
+                                                crossAxisAlignment: CrossAxisAlignment.start,
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Text(
+                                                    track.title,
+                                                    style: const TextStyle(
+                                                      fontSize: 21,
+                                                      fontWeight: FontWeight.w800,
+                                                      color: Colors.white,
+                                                      letterSpacing: -0.4,
+                                                    ),
+                                                    maxLines: 1,
+                                                    overflow: TextOverflow.ellipsis,
                                                   ),
-                                                  child: Text(
-                                                    line.text,
-                                                    textAlign: TextAlign.center,
+                                                  const SizedBox(height: 3),
+                                                  Text(
+                                                    track.artist,
+                                                    style: TextStyle(
+                                                      fontSize: 15,
+                                                      fontWeight: FontWeight.w500,
+                                                      color: Colors.white.withValues(alpha: 0.70),
+                                                    ),
+                                                    maxLines: 1,
+                                                    overflow: TextOverflow.ellipsis,
                                                   ),
-                                                ),
+                                                ],
                                               ),
-                                            );
-                                          },
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                          ),
-                        ],
-                      ),
-                    ),
-
-                    // Dot Page Indicator
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          width: _activePageIndex == 0 ? 18 : 6,
-                          height: 6,
-                          decoration: BoxDecoration(
-                            color: _activePageIndex == 0 ? SpectraTheme.cyanWave : Colors.white24,
-                            borderRadius: BorderRadius.circular(3),
-                          ),
-                        ),
-                        const SizedBox(width: 6),
-                        Container(
-                          width: _activePageIndex == 1 ? 18 : 6,
-                          height: 6,
-                          decoration: BoxDecoration(
-                            color: _activePageIndex == 1 ? SpectraTheme.cyanWave : Colors.white24,
-                            borderRadius: BorderRadius.circular(3),
-                          ),
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 12),
-
-                    // Main track info row
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      track.title,
-                                      style: const TextStyle(
-                                        fontSize: 22,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.white,
-                                        letterSpacing: -0.5,
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                    const SizedBox(height: 3),
-                                    Text(
-                                      track.artist,
-                                      style: const TextStyle(
-                                        fontSize: 15,
-                                        color: Colors.white60,
-                                      ),
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              // Interactive Favorite / Heart Button
-                              ListenableBuilder(
-                                listenable: PlaylistService.instance,
-                                builder: (context, _) {
-                                  final isLiked = PlaylistService.instance.isTrackLiked(track.id);
-                                  return IconButton(
-                                    icon: Icon(
-                                      isLiked ? Icons.favorite_rounded : Icons.favorite_border_rounded,
-                                      color: isLiked ? const Color(0xFFFF2E93) : Colors.white60,
-                                      size: 26,
-                                    ),
-                                    tooltip: isLiked ? 'Liked (Tap to remove)' : 'Like song',
-                                    onPressed: () async {
-                                      final nowLiked = await PlaylistService.instance.toggleLikeTrack(track.id);
-                                      if (context.mounted) {
-                                        ScaffoldMessenger.of(context).hideCurrentSnackBar();
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          SnackBar(
-                                            content: Row(
-                                              children: [
-                                                Icon(
-                                                  nowLiked ? Icons.favorite_rounded : Icons.heart_broken_rounded,
-                                                  color: nowLiked ? const Color(0xFFFF2E93) : Colors.white70,
-                                                  size: 18,
-                                                ),
-                                                const SizedBox(width: 10),
-                                                Expanded(
-                                                  child: Text(
-                                                    nowLiked
-                                                        ? 'Saved to Liked Songs'
-                                                        : 'Removed from Liked Songs',
-                                                  ),
-                                                ),
-                                              ],
                                             ),
-                                            backgroundColor: const Color(0xFF1B1E28),
-                                            behavior: SnackBarBehavior.floating,
-                                            duration: const Duration(seconds: 2),
-                                          ),
-                                        );
-                                      }
-                                    },
-                                  );
-                                },
-                              ),
-                            ],
-                          ),
-                          // Live Audio Spec Pill (Exclusively shown in Audiophile Studio Mode)
-                          if (widget.viewMode == LibraryViewMode.audiophileHybrid && widget.showAudioSpecPill) ...[
-                            const SizedBox(height: 8),
-                            () {
-                              final isFlac = track.format == AudioFormat.flac;
-                              final isOpus = track.format == AudioFormat.opus;
-                              final formatName = track.format.name.toUpperCase();
-                              
-                              // Dynamic audiophile technical specifications
-                              final bitDepthStr = isFlac ? '24-BIT / 96kHz' : (isOpus ? '48kHz' : '16-BIT / 44.1kHz');
-                              final bitrateStr = isFlac ? '920 kbps' : (isOpus ? '160 kbps' : '320 kbps');
-                              final dacEngineStr = isFlac ? 'BIT-PERFECT DIRECT DAC' : 'HI-FI ENGINE';
-
-                              return FittedBox(
-                                fit: BoxFit.scaleDown,
-                                alignment: Alignment.centerLeft,
-                                child: LiquidGlassContainer(
-                                  borderRadius: 20,
-                                  blur: 14,
-                                  tintColor: isFlac ? SpectraTheme.cyanWave : Colors.white,
-                                  tintAlpha: isFlac ? 0.15 : 0.06,
-                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4.5),
-                                  glowShadows: isFlac
-                                      ? [
-                                          BoxShadow(
-                                            color: SpectraTheme.cyanWave.withValues(alpha: 0.22),
-                                            blurRadius: 14,
-                                            offset: const Offset(0, 2),
-                                          ),
-                                        ]
-                                      : null,
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
-                                        decoration: BoxDecoration(
-                                          color: isFlac ? const Color(0xFFFFB300) : SpectraTheme.cyanWave,
-                                          borderRadius: BorderRadius.circular(4),
+                                            // Interactive Favorite / Heart Button
+                                            ListenableBuilder(
+                                              listenable: PlaylistService.instance,
+                                              builder: (context, _) {
+                                                final isLiked = PlaylistService.instance.isTrackLiked(track.id);
+                                                return IconButton(
+                                                  icon: Icon(
+                                                    isLiked ? Icons.favorite_rounded : Icons.favorite_border_rounded,
+                                                    color: isLiked ? const Color(0xFFFF2E93) : Colors.white54,
+                                                    size: 26,
+                                                  ),
+                                                  tooltip: isLiked ? 'Liked (Tap to remove)' : 'Like song',
+                                                  onPressed: () async {
+                                                    final nowLiked = await PlaylistService.instance.toggleLikeTrack(track.id);
+                                                    if (context.mounted) {
+                                                      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+                                                      ScaffoldMessenger.of(context).showSnackBar(
+                                                        SnackBar(
+                                                          content: Row(
+                                                            children: [
+                                                              Icon(
+                                                                nowLiked ? Icons.favorite_rounded : Icons.heart_broken_rounded,
+                                                                color: nowLiked ? const Color(0xFFFF2E93) : Colors.white70,
+                                                                size: 18,
+                                                              ),
+                                                              const SizedBox(width: 10),
+                                                              Expanded(
+                                                                child: Text(
+                                                                  nowLiked
+                                                                      ? 'Saved to Liked Songs'
+                                                                      : 'Removed from Liked Songs',
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                          backgroundColor: const Color(0xFF1B1E28),
+                                                          behavior: SnackBarBehavior.floating,
+                                                          duration: const Duration(seconds: 2),
+                                                        ),
+                                                      );
+                                                    }
+                                                  },
+                                                );
+                                              },
+                                            ),
+                                          ],
                                         ),
-                                        child: Text(
-                                          formatName,
-                                          style: const TextStyle(
-                                            color: Colors.black,
-                                            fontWeight: FontWeight.w900,
-                                            fontSize: 9,
-                                            letterSpacing: 0.4,
-                                          ),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 7),
-                                      Text(
-                                        '$bitDepthStr • $bitrateStr',
-                                        style: TextStyle(
-                                          color: isFlac ? SpectraTheme.cyanWave : Colors.white70,
-                                          fontWeight: FontWeight.w700,
-                                          fontSize: 10,
-                                          letterSpacing: 0.3,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 7),
-                                      Container(
-                                        width: 3.5,
-                                        height: 3.5,
-                                        decoration: BoxDecoration(
-                                          color: isFlac ? SpectraTheme.cyanWave : Colors.white30,
-                                          shape: BoxShape.circle,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 7),
-                                      Text(
-                                        dacEngineStr,
-                                        style: TextStyle(
-                                          color: isFlac ? const Color(0xFF69F0AE) : Colors.white38,
-                                          fontWeight: FontWeight.w800,
-                                          fontSize: 9,
-                                          letterSpacing: 0.4,
-                                        ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
-                                ),
-                              );
-                            }(),
-                          ],
-                        ],
-                      ),
-                    ),
-
-                    const SizedBox(height: 12),
-
-                    // FLOATING LIQUID GLASS CONTROLS DOCK
-                    LiquidGlassContainer(
-                      borderRadius: 28,
-                      blur: 20,
-                      tintColor: Colors.white,
-                      tintAlpha: 0.05,
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 12),
-                      glowShadows: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.45),
-                          blurRadius: 26,
-                          offset: const Offset(0, 8),
-                        ),
-                        BoxShadow(
-                          color: ambientColors[0].withValues(alpha: 0.12),
-                          blurRadius: 20,
-                          offset: const Offset(0, 0),
-                        ),
-                      ],
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          // Seeker Bar
-                          Slider(
-                            value: position.inMilliseconds.clamp(0, duration.inMilliseconds).toDouble(),
-                            max: duration.inMilliseconds.toDouble(),
-                            onChanged: (val) {
-                              widget.playerService.seek(Duration(milliseconds: val.toInt()));
-                            },
-                          ),
-
-                          // Time Row
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(_formatDuration(position), style: const TextStyle(color: Colors.white38, fontSize: 12)),
-                                Text(_formatDuration(duration), style: const TextStyle(color: Colors.white38, fontSize: 12)),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
-
-                          const SizedBox(height: 8),
-
-                          // Playback Controls (Shuffle, Previous, Play/Pause, Next, Repeat)
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: [
-                              // Shuffle Toggle
-                              IconButton(
-                                icon: Icon(
-                                  Icons.shuffle_rounded,
-                                  color: widget.playerService.isShuffle ? SpectraTheme.cyanWave : Colors.white38,
-                                  size: 24,
-                                ),
-                                tooltip: 'Shuffle: ${widget.playerService.isShuffle ? "ON" : "OFF"}',
-                                onPressed: () => widget.playerService.toggleShuffle(),
-                              ),
-
-                              // Skip Previous
-                              IconButton(
-                                icon: const Icon(Icons.skip_previous_rounded, color: Colors.white, size: 36),
-                                tooltip: 'Previous Track',
-                                onPressed: () => widget.playerService.previousTrack(),
-                              ),
-
-                              // Play/Pause Big Radiant Button
-                              Container(
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  gradient: const LinearGradient(
-                                    colors: [SpectraTheme.cyanWave, SpectraTheme.neonMagenta],
-                                  ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: SpectraTheme.cyanWave.withValues(alpha: 0.45),
-                                      blurRadius: 22,
-                                    )
-                                  ],
-                                ),
-                                child: IconButton(
-                                  iconSize: 38,
-                                  icon: Icon(
-                                    widget.playerService.isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                                    color: Colors.white,
-                                  ),
-                                  tooltip: widget.playerService.isPlaying ? 'Pause' : 'Play',
-                                  onPressed: () => widget.playerService.togglePlayPause(),
-                                ),
-                              ),
-
-                              // Skip Next
-                              IconButton(
-                                icon: const Icon(Icons.skip_next_rounded, color: Colors.white, size: 36),
-                                tooltip: 'Next Track',
-                                onPressed: () => widget.playerService.nextTrack(),
-                              ),
-
-                              // Repeat Toggle
-                              IconButton(
-                                icon: Icon(
-                                  widget.playerService.isRepeat ? Icons.repeat_one_rounded : Icons.repeat_rounded,
-                                  color: widget.playerService.isRepeat ? SpectraTheme.neonMagenta : Colors.white38,
-                                  size: 24,
-                                ),
-                                tooltip: 'Repeat: ${widget.playerService.isRepeat ? "Track" : "OFF"}',
-                                onPressed: () => widget.playerService.toggleRepeat(),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 10),
-
-                          // --- PERSONA ADAPTIVE CONTROLS ---
-                          if (widget.viewMode == LibraryViewMode.classic) ...[
-                            // CLASSIC MINIMAL: 1-Tap Sound Presets
-                            _buildClassicQuickPresetsBar(),
-                          ] else ...[
-                            // AUDIOPHILE STUDIO: Studio DSP quick metrics & shortcuts
-                            _buildAudiophileStudioQuickBar(context),
-                          ],
-                        ],
+                        ),
                       ),
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    // FLOATING LIQUID GLASS CONTROLS DOCK (matching liquid_glass_ui_1791451290858.jpg)
+                    LiquidGlassPlayerCapsule(
+                      playerService: widget.playerService,
+                      track: track,
+                      isMini: false,
                     ),
                     const SizedBox(height: 8),
                   ],
@@ -1215,153 +935,161 @@ class _NowPlayingScreenState extends State<NowPlayingScreen> {
     );
   }
 
-  /// 1-Tap preset selector for Classic Mode in Liquid Glass
-  Widget _buildClassicQuickPresetsBar() {
-    final eq = EqService.instance;
-    final activeType = eq.isEnabled && eq.currentPreset != null
-        ? eq.currentPreset!.type
-        : EqPresetType.flat;
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          _buildPresetChip(
-            label: 'Flat',
-            icon: Icons.horizontal_rule_rounded,
-            isSelected: activeType == EqPresetType.flat,
-            onTap: () {
-              final p = EqService.builtinPresets.firstWhere((p) => p.type == EqPresetType.flat);
-              eq.applyPreset(p);
-              setState(() {});
-            },
-          ),
-          _buildPresetChip(
-            label: '🚗 Car',
-            icon: Icons.directions_car_rounded,
-            isSelected: activeType == EqPresetType.carAudio,
-            selectedColor: const Color(0xFF10B981),
-            onTap: () {
-              final p = EqService.builtinPresets.firstWhere((p) => p.type == EqPresetType.carAudio);
-              eq.applyPreset(p);
-              setState(() {});
-            },
-          ),
-          _buildPresetChip(
-            label: 'Bass',
-            icon: Icons.graphic_eq_rounded,
-            isSelected: activeType == EqPresetType.bassBoost,
-            onTap: () {
-              final p = EqService.builtinPresets.firstWhere((p) => p.type == EqPresetType.bassBoost);
-              eq.applyPreset(p);
-              setState(() {});
-            },
-          ),
-          _buildPresetChip(
-            label: 'Vocal',
-            icon: Icons.mic_rounded,
-            isSelected: activeType == EqPresetType.vocalClarity,
-            onTap: () {
-              final p = EqService.builtinPresets.firstWhere((p) => p.type == EqPresetType.vocalClarity);
-              eq.applyPreset(p);
-              setState(() {});
-            },
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildPresetChip({
-    required String label,
-    required IconData icon,
-    required bool isSelected,
-    Color selectedColor = SpectraTheme.cyanWave,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        decoration: BoxDecoration(
-          color: isSelected ? selectedColor.withValues(alpha: 0.22) : Colors.white.withValues(alpha: 0.04),
-          borderRadius: BorderRadius.circular(16),
-          border: isSelected ? Border.all(color: selectedColor.withValues(alpha: 0.5), width: 1) : null,
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: selectedColor.withValues(alpha: 0.25),
-                    blurRadius: 10,
+  /// Interactive synced lyrics view hosted inside the Master Tablet
+  Widget _buildLyricsView(Track track, bool isSyncedLrc, Duration adjustedPosition) {
+    if (_lyrics.isEmpty) {
+      return Center(
+        child: _isLoadingLyrics
+            ? Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: SpectraTheme.cyanWave,
                   ),
-                ]
-              : null,
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              icon,
-              size: 13,
-              color: isSelected ? selectedColor : Colors.white54,
-            ),
-            const SizedBox(width: 5),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                color: isSelected ? Colors.white : Colors.white60,
+                  const SizedBox(height: 16),
+                  Text(
+                    'Searching synced lyrics for "${track.title}"...',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: Colors.white70, fontSize: 13),
+                  ),
+                  const SizedBox(height: 6),
+                  const Text(
+                    '(Swipe left for album artwork)',
+                    style: TextStyle(color: Colors.white38, fontSize: 11),
+                  ),
+                ],
+              )
+            : Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.lyrics_outlined,
+                    size: 40,
+                    color: Colors.white24,
+                  ),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'Lyrics not available for this track',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'No synced or text lyrics found for "${track.title}"',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(color: Colors.white38, fontSize: 11),
+                  ),
+                  const SizedBox(height: 16),
+                  OutlinedButton.icon(
+                    onPressed: _loadLyrics,
+                    icon: const Icon(Icons.refresh_rounded, size: 14, color: SpectraTheme.cyanWave),
+                    label: const Text(
+                      'Retry Search',
+                      style: TextStyle(color: SpectraTheme.cyanWave, fontSize: 12),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      side: BorderSide(color: SpectraTheme.cyanWave.withValues(alpha: 0.3)),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+      );
+    }
 
-  /// Audiophile quick DSP bar in Liquid Glass
-  Widget _buildAudiophileStudioQuickBar(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 4),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Row(
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(bottom: 8.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Container(
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: SpectraTheme.cyanWave.withValues(alpha: 0.20),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: const Icon(Icons.tune_rounded, size: 14, color: SpectraTheme.cyanWave),
+              Icon(
+                isSyncedLrc ? Icons.graphic_eq_rounded : Icons.menu_book_rounded,
+                size: 13,
+                color: isSyncedLrc ? SpectraTheme.cyanWave : Colors.white38,
               ),
-              const SizedBox(width: 8),
-              const Text(
-                'STUDIO DSP ACTIVE',
+              const SizedBox(width: 6),
+              Text(
+                isSyncedLrc ? 'SYNCED KARAOKE' : 'UNSYNCED LYRICS',
                 style: TextStyle(
-                  color: SpectraTheme.cyanWave,
+                  color: isSyncedLrc ? SpectraTheme.cyanWave : Colors.white38,
                   fontSize: 10,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: 1.0,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1.2,
                 ),
               ),
             ],
           ),
-          Text(
-            'BIT-PERFECT • GAPLESS',
-            style: TextStyle(
-              color: Colors.white.withValues(alpha: 0.6),
-              fontSize: 9.5,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 0.8,
-            ),
+        ),
+        Expanded(
+          child: ListView.builder(
+            controller: _lyricsScrollController,
+            itemCount: _lyrics.length,
+            itemBuilder: (context, idx) {
+              final line = _lyrics[idx];
+              final isCurrent = isSyncedLrc &&
+                  adjustedPosition >= line.timestamp &&
+                  (idx == _lyrics.length - 1 ||
+                      adjustedPosition < _lyrics[idx + 1].timestamp);
+
+              return GestureDetector(
+                onTap: isSyncedLrc
+                    ? () {
+                        widget.playerService.seek(line.timestamp);
+                      }
+                    : null,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 350),
+                  curve: Curves.easeOutCubic,
+                  margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 8.0),
+                  padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 8),
+                  color: Colors.transparent,
+                  child: AnimatedDefaultTextStyle(
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeOutCubic,
+                    style: TextStyle(
+                      fontSize: isCurrent
+                          ? 22
+                          : (isSyncedLrc ? 16 : 17),
+                      fontWeight: isCurrent
+                          ? FontWeight.w800
+                          : (isSyncedLrc ? FontWeight.w500 : FontWeight.w600),
+                      color: isCurrent
+                          ? SpectraTheme.cyanWave
+                          : (isSyncedLrc ? Colors.white30 : Colors.white70),
+                      letterSpacing: 0.3,
+                      height: 1.45,
+                      shadows: isCurrent
+                          ? [
+                              Shadow(
+                                color: SpectraTheme.cyanWave.withValues(alpha: 0.6),
+                                blurRadius: 18,
+                              ),
+                              Shadow(
+                                color: SpectraTheme.cyanWave.withValues(alpha: 0.3),
+                                blurRadius: 32,
+                              ),
+                            ]
+                          : null,
+                    ),
+                    child: Text(
+                      line.text,
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+              );
+            },
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

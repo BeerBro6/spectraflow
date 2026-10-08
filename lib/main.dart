@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -13,7 +14,6 @@ import 'screens/settings_screen.dart';
 import 'screens/splash_screen.dart';
 import 'screens/welcome_screen.dart';
 import 'screens/feature_intro_screen.dart';
-import 'screens/eq_screen.dart' show EqScreen;
 
 import 'services/local_vault_service.dart';
 import 'services/local_audio_proxy_service.dart';
@@ -21,7 +21,7 @@ import 'services/playlist_service.dart';
 import 'services/permission_hub_service.dart';
 import 'services/first_launch_service.dart';
 import 'widgets/liquid_glass.dart';
-import 'widgets/track_artwork.dart';
+import 'widgets/liquid_glass_player_capsule.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -163,6 +163,9 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
   late final AudioPlayerService _playerService;
   late final DownloaderService _downloaderService;
 
+  Timer? _bottomBarTimer;
+  bool _isBottomBarVisible = true;
+
   @override
   void initState() {
     super.initState();
@@ -173,7 +176,44 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
     _downloaderService = DownloaderService();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkNotificationPermission();
+      _startBottomBarTimerIfNeeded();
     });
+  }
+
+  void _startBottomBarTimerIfNeeded() {
+    _bottomBarTimer?.cancel();
+    if (_currentIndex == 1) {
+      _bottomBarTimer = Timer(const Duration(milliseconds: 3500), () {
+        if (mounted && _currentIndex == 1) {
+          setState(() => _isBottomBarVisible = false);
+        }
+      });
+    } else {
+      if (!_isBottomBarVisible) {
+        setState(() => _isBottomBarVisible = true);
+      }
+    }
+  }
+
+  void _onUserActivity() {
+    if (_currentIndex == 1) {
+      if (!_isBottomBarVisible) {
+        setState(() => _isBottomBarVisible = true);
+      }
+      _startBottomBarTimerIfNeeded();
+    } else {
+      if (!_isBottomBarVisible) {
+        setState(() => _isBottomBarVisible = true);
+      }
+    }
+  }
+
+  void _selectTab(int index) {
+    setState(() {
+      _currentIndex = index;
+      _isBottomBarVisible = true;
+    });
+    _startBottomBarTimerIfNeeded();
   }
 
   void _checkNotificationPermission() async {
@@ -227,6 +267,7 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
 
   @override
   void dispose() {
+    _bottomBarTimer?.cancel();
     _playerService.dispose();
     _downloaderService.dispose();
     super.dispose();
@@ -238,7 +279,7 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
       LibraryScreen(
         playerService: _playerService,
         viewMode: _viewMode,
-        onOpenNowPlaying: () => setState(() => _currentIndex = 1),
+        onOpenNowPlaying: () => _selectTab(1),
       ),
       NowPlayingScreen(
         playerService: _playerService,
@@ -247,12 +288,12 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
         onToggleAudioSpecPill: () => setState(() => _showAudioSpecPill = !_showAudioSpecPill),
         showQueueDrawer: _showQueueDrawer,
         onToggleQueueDrawer: () => setState(() => _showQueueDrawer = !_showQueueDrawer),
-        onBack: () => setState(() => _currentIndex = 0),
+        onBack: () => _selectTab(0),
       ),
       SearchScreen(
         playerService: _playerService,
         downloaderService: _downloaderService,
-        onOpenNowPlaying: () => setState(() => _currentIndex = 1),
+        onOpenNowPlaying: () => _selectTab(1),
       ),
       SettingsScreen(
         currentMode: _viewMode,
@@ -269,60 +310,75 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
 
     return Scaffold(
       extendBody: true,
-      body: IndexedStack(
-        index: _currentIndex,
-        children: screens,
+      body: Listener(
+        behavior: HitTestBehavior.translucent,
+        onPointerDown: (_) => _onUserActivity(),
+        child: IndexedStack(
+          index: _currentIndex,
+          children: screens,
+        ),
       ),
-      // Sleek floating bottom capsule menu with floating mini-player
-      bottomNavigationBar: Container(
-        color: Colors.transparent,
-        padding: const EdgeInsets.only(left: 14, right: 14, bottom: 18, top: 4),
-        child: SafeArea(
-          top: false,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Floating Mini-Player capsule
-              if (_showMiniPlayer && _currentIndex != 1)
-                ListenableBuilder(
-                  listenable: _playerService,
-                  builder: (context, _) {
-                    final track = _playerService.currentTrack;
-                    if (track == null) return const SizedBox.shrink();
-                    return _buildFloatingMiniPlayer(track);
-                  },
-                ),
-              // Main navigation pill (4 items) in Liquid Glass
-              LiquidGlassContainer(
-                height: 64,
-                borderRadius: 32,
-                blur: 18,
-                tintColor: Colors.white,
-                tintAlpha: 0.06,
-                glowShadows: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.5),
-                    blurRadius: 24,
-                    offset: const Offset(0, 8),
-                  ),
-                  BoxShadow(
-                    color: SpectraTheme.cyanWave.withValues(alpha: 0.05),
-                    blurRadius: 20,
-                    offset: const Offset(0, 0),
+      // Sleek floating bottom capsule menu with auto-hide animation on Now Playing
+      bottomNavigationBar: AnimatedSlide(
+        offset: _isBottomBarVisible ? Offset.zero : const Offset(0, 1.4),
+        duration: const Duration(milliseconds: 380),
+        curve: Curves.easeInOutCubic,
+        child: AnimatedOpacity(
+          opacity: _isBottomBarVisible ? 1.0 : 0.0,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+          child: Container(
+            color: Colors.transparent,
+            padding: const EdgeInsets.only(left: 16, right: 16, bottom: 6, top: 2),
+            child: SafeArea(
+              top: false,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Floating Mini-Player capsule (when not in full player)
+                  if (_showMiniPlayer && _currentIndex != 1)
+                    ListenableBuilder(
+                      listenable: _playerService,
+                      builder: (context, _) {
+                        final track = _playerService.currentTrack;
+                        if (track == null) return const SizedBox.shrink();
+                        return _buildFloatingMiniPlayer(track);
+                      },
+                    ),
+                  // Main navigation pill (4 items) in Liquid Glass
+                  LiquidGlassContainer(
+                    height: 60,
+                    borderRadius: 30,
+                    blur: 20,
+                    tintColor: Colors.white,
+                    tintAlpha: 0.08,
+                    glowShadows: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.55),
+                        blurRadius: 28,
+                        offset: const Offset(0, 8),
+                      ),
+                      BoxShadow(
+                        color: SpectraTheme.cyanWave.withValues(alpha: 0.12),
+                        blurRadius: 20,
+                        spreadRadius: -2,
+                        offset: const Offset(0, 0),
+                      ),
+                    ],
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        _buildNavItem(icon: Icons.grid_view_rounded, index: 0, label: 'Library'),
+                        _buildNavItem(icon: Icons.equalizer_rounded, index: 1, label: 'Player'),
+                        _buildNavItem(icon: Icons.search_rounded, index: 2, label: 'Search'),
+                        _buildNavItem(icon: Icons.settings_rounded, index: 3, label: 'Settings'),
+                      ],
+                    ),
                   ),
                 ],
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    _buildNavItem(icon: Icons.grid_view_rounded, index: 0, label: 'Library'),
-                    _buildNavItem(icon: Icons.equalizer_rounded, index: 1, label: 'Player'),
-                    _buildNavItem(icon: Icons.search_rounded, index: 2, label: 'Search'),
-                    _buildNavItem(icon: Icons.settings_rounded, index: 3, label: 'Settings'),
-                  ],
-                ),
               ),
-            ],
+            ),
           ),
         ),
       ),
@@ -330,127 +386,13 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
   }
 
   Widget _buildFloatingMiniPlayer(dynamic track) {
-    final isPlaying = _playerService.isPlaying;
-    final position = _playerService.position;
-    final duration = _playerService.duration;
-    final progress = (duration.inMilliseconds > 0)
-        ? (position.inMilliseconds / duration.inMilliseconds).clamp(0.0, 1.0)
-        : 0.0;
-
     return Container(
       margin: const EdgeInsets.only(bottom: 10),
-      child: LiquidGlassContainer(
-        borderRadius: 18,
-        blur: 18,
-        tintColor: SpectraTheme.cyanWave,
-        tintAlpha: 0.06,
-        padding: EdgeInsets.zero,
-        glowShadows: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.5),
-            blurRadius: 20,
-            offset: const Offset(0, 6),
-          ),
-          BoxShadow(
-            color: SpectraTheme.cyanWave.withValues(alpha: 0.10),
-            blurRadius: 16,
-            offset: const Offset(0, 0),
-          ),
-        ],
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            borderRadius: BorderRadius.circular(18),
-            onTap: () => setState(() => _currentIndex = 1),
-            splashColor: SpectraTheme.cyanWave.withValues(alpha: 0.15),
-            highlightColor: Colors.white.withValues(alpha: 0.05),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
-                  child: Row(
-                    children: [
-                      // Track Artwork thumbnail
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
-                        child: SizedBox(
-                          width: 42,
-                          height: 42,
-                          child: TrackArtwork(
-                            artworkUrl: track.artworkUrl,
-                            fit: BoxFit.cover,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      // Title & Artist
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              track.title,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 13.5,
-                                letterSpacing: 0.2,
-                              ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              track.artist,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.6),
-                                fontSize: 11.5,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 4),
-                      // DSP Equalizer shortcut
-                      IconButton(
-                        onPressed: () => Navigator.of(context).push(
-                          MaterialPageRoute(builder: (_) => const EqScreen()),
-                        ),
-                        iconSize: 22,
-                        color: SpectraTheme.cyanWave,
-                        splashRadius: 18,
-                        tooltip: 'DSP Equalizer',
-                        icon: const Icon(Icons.tune_rounded),
-                      ),
-                      // Play / Pause toggle
-                      IconButton(
-                        onPressed: () => _playerService.togglePlayPause(),
-                        iconSize: 28,
-                        color: Colors.white,
-                        splashRadius: 22,
-                        icon: Icon(
-                          isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                // Micro live progress indicator bar across the bottom
-                LinearProgressIndicator(
-                  value: progress,
-                  minHeight: 2.5,
-                  backgroundColor: Colors.white.withValues(alpha: 0.08),
-                  valueColor: const AlwaysStoppedAnimation<Color>(SpectraTheme.cyanWave),
-                ),
-              ],
-            ),
-          ),
-        ),
+      child: LiquidGlassPlayerCapsule(
+        playerService: _playerService,
+        track: track,
+        isMini: true,
+        onTap: () => _selectTab(1),
       ),
     );
   }
@@ -459,32 +401,32 @@ class _MainNavigationShellState extends State<MainNavigationShell> {
     final isSelected = _currentIndex == index;
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: () => setState(() => _currentIndex = index),
+      onTap: () => _selectTab(index),
       child: Center(
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 220),
-          width: 52,
-          height: 44,
+          width: 48,
+          height: 48,
           alignment: Alignment.center,
           decoration: BoxDecoration(
-            color: isSelected ? SpectraTheme.cyanWave.withValues(alpha: 0.16) : Colors.transparent,
-            borderRadius: BorderRadius.circular(22),
+            shape: BoxShape.circle,
+            color: isSelected ? SpectraTheme.cyanWave.withValues(alpha: 0.20) : Colors.transparent,
             border: isSelected
-                ? Border.all(color: SpectraTheme.cyanWave.withValues(alpha: 0.4), width: 1)
+                ? Border.all(color: SpectraTheme.cyanWave.withValues(alpha: 0.60), width: 1.2)
                 : null,
             boxShadow: isSelected
                 ? [
                     BoxShadow(
-                      color: SpectraTheme.cyanWave.withValues(alpha: 0.25),
-                      blurRadius: 12,
-                      spreadRadius: -2,
+                      color: SpectraTheme.cyanWave.withValues(alpha: 0.40),
+                      blurRadius: 14,
+                      spreadRadius: -1,
                     ),
                   ]
                 : null,
           ),
           child: Icon(
             icon,
-            color: isSelected ? SpectraTheme.cyanWave : Colors.white38,
+            color: isSelected ? SpectraTheme.cyanWave : Colors.white.withValues(alpha: 0.45),
             size: 24,
           ),
         ),

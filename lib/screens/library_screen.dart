@@ -1341,11 +1341,9 @@ class _LibraryScreenState extends State<LibraryScreen> {
                         ? SpectraTheme.cyanWave.withValues(alpha: 0.12)
                         : Colors.white.withValues(alpha: 0.03),
                     borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: isSelected
-                          ? SpectraTheme.cyanWave.withValues(alpha: 0.5)
-                          : Colors.white10,
-                    ),
+                    border: isSelected
+                        ? Border.all(color: SpectraTheme.cyanWave.withValues(alpha: 0.5))
+                        : null,
                   ),
                   child: ListTile(
                     contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
@@ -1516,7 +1514,6 @@ class _LibraryScreenState extends State<LibraryScreen> {
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.03),
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.white10),
                 ),
                 child: ListTile(
                   leading: Container(
@@ -1764,69 +1761,50 @@ class _LibraryScreenState extends State<LibraryScreen> {
   }
 
   Widget _buildTrackTile(Track track, List<Track> playlist, bool isHybrid) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 6),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.03),
-        borderRadius: BorderRadius.circular(14),
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      leading: TrackArtwork(
+        artworkUrl: track.artworkUrl,
+        width: 48,
+        height: 48,
+        borderRadius: BorderRadius.circular(10),
       ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
-        leading: TrackArtwork(
-          artworkUrl: track.artworkUrl,
-          width: 48,
-          height: 48,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        title: Text(
-          track.title,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(fontWeight: FontWeight.w600, color: Colors.white, fontSize: 14),
-        ),
-        subtitle: Text(
-          '${track.artist} • ${_formatDuration(track.duration)}',
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: const TextStyle(color: Colors.white54, fontSize: 12),
-        ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (isHybrid)
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                decoration: BoxDecoration(
-                  color: SpectraTheme.cyanWave.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: SpectraTheme.cyanWave.withValues(alpha: 0.35)),
-                ),
-                child: const Text(
-                  'FLAC • 24-bit / 96kHz',
-                  style: TextStyle(
-                    color: SpectraTheme.cyanWave,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 10,
-                    letterSpacing: 0.4,
-                  ),
-                ),
-              )
-            else
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(6),
-                ),
-                child: const Text(
-                  'FLAC',
-                  style: TextStyle(
-                    color: Colors.white70,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 11,
-                  ),
-                ),
+      title: Text(
+        track.title,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: const TextStyle(fontWeight: FontWeight.w600, color: Colors.white, fontSize: 14),
+      ),
+      subtitle: Text(
+        '${track.artist} • ${_formatDuration(track.duration)}',
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        style: const TextStyle(color: Colors.white54, fontSize: 12),
+      ),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (isHybrid)
+            const Text(
+              'FLAC • 24/96',
+              style: TextStyle(
+                color: SpectraTheme.cyanWave,
+                fontWeight: FontWeight.bold,
+                fontSize: 11,
+                letterSpacing: 0.3,
               ),
+            )
+          else
+            Text(
+              track.format.name.toUpperCase(),
+              style: TextStyle(
+                color: Colors.white.withValues(alpha: 0.38),
+                fontWeight: FontWeight.w600,
+                fontSize: 11,
+                letterSpacing: 0.5,
+              ),
+            ),
             const SizedBox(width: 4),
             IconButton(
               icon: const Icon(Icons.playlist_add_rounded, color: Colors.white54, size: 20),
@@ -1837,8 +1815,7 @@ class _LibraryScreenState extends State<LibraryScreen> {
         ),
         onTap: () => _openNowPlaying(track, playlist),
         onLongPress: () => _showTrackOptionsSheet(track),
-      ),
-    );
+      );
   }
 
   void _showTrackOptionsSheet(Track track) {

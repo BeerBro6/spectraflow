@@ -498,12 +498,39 @@ class EqScreen extends StatelessWidget {
   }
 }
 
-class _EqBody extends StatelessWidget {
+class _EqBody extends StatefulWidget {
   const _EqBody({required this.c});
   final EqController c;
 
   @override
+  State<_EqBody> createState() => _EqBodyState();
+}
+
+class _EqBodyState extends State<_EqBody> with SingleTickerProviderStateMixin {
+  late final AnimationController _waveCtrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _waveCtrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 3200),
+    );
+    final isTest = WidgetsBinding.instance.runtimeType.toString().toLowerCase().contains('test');
+    if (!isTest) {
+      _waveCtrl.repeat();
+    }
+  }
+
+  @override
+  void dispose() {
+    _waveCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final c = widget.c;
     final active = c.supported && c.enabled;
     final badgeColor = !c.supported
         ? Prism.textDim
@@ -573,6 +600,19 @@ class _EqBody extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // 1. HERO TABLET: Liquid Glass 10-Band Graphic Equalizer + Spline + Waveform
+                  _LiquidGlassMasterTablet(
+                    c: c,
+                    waveAnimation: _waveCtrl,
+                    active: active,
+                  ),
+                  const SizedBox(height: 16),
+
+                  // 2. HERO CARD 2: Car Acoustic DSP Matrix
+                  _CarAcousticDspMatrixPanel(c: c, active: active),
+                  const SizedBox(height: 16),
+
+                  // 3. Frequency Response Curve
                   _CurveCard(c: c, active: active),
                   const _Section('Genre Presets'),
                   SizedBox(
@@ -621,13 +661,6 @@ class _EqBody extends StatelessWidget {
                       },
                     ),
                   ),
-                  _Section(
-                    'Fine-tune (10-Band Graphic)',
-                    trailing: c.isModified
-                        ? Text('modified', style: _mono(color: Prism.magenta, size: 11))
-                        : null,
-                  ),
-                  _BandsCard(c: c),
                   const _Section('Pre-amp'),
                   _PreampCard(c: c),
                   const _Section('Hardware DSP & Sound Effects'),
@@ -712,15 +745,15 @@ class _Glass extends StatelessWidget {
             decoration: BoxDecoration(
               borderRadius: r,
               border: Border.all(
-                color: Colors.white.withValues(alpha: 0.16),
+                color: Colors.white.withValues(alpha: 0.035),
                 width: 1.0,
               ),
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: [
-                  tint.withValues(alpha: 0.08),
-                  tint.withValues(alpha: 0.02),
+                  tint.withValues(alpha: 0.05),
+                  tint.withValues(alpha: 0.015),
                 ],
               ),
             ),
@@ -735,7 +768,7 @@ class _Glass extends StatelessWidget {
                           begin: Alignment.topLeft,
                           end: Alignment.center,
                           colors: [
-                            Colors.white.withValues(alpha: 0.10),
+                            Colors.white.withValues(alpha: 0.04),
                             Colors.transparent,
                           ],
                         ),
@@ -1345,30 +1378,1273 @@ class _HardwareEffectsCard extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Fine-tune sliders (hardware-style faders)
+// Liquid Glass Master Tablet & 10-Band Graphic Equalizer with Response Spline
 // ─────────────────────────────────────────────────────────────────────────────
 
-class _BandsCard extends StatelessWidget {
-  const _BandsCard({required this.c});
+class _LiquidGlassMasterTablet extends StatelessWidget {
+  const _LiquidGlassMasterTablet({
+    required this.c,
+    required this.waveAnimation,
+    required this.active,
+  });
+
   final EqController c;
+  final Animation<double> waveAnimation;
+  final bool active;
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 254,
-      child: _Glass(
-        padding: const EdgeInsets.fromLTRB(6, 14, 6, 12),
-        child: Row(
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(28),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.65),
+            blurRadius: 36,
+            offset: const Offset(0, 16),
+          ),
+          // Radiant Electric Cyan bloom on left / bottom-left
+          BoxShadow(
+            color: Prism.cyan.withValues(alpha: active ? 0.32 : 0.08),
+            blurRadius: 52,
+            spreadRadius: 2,
+            offset: const Offset(-12, 10),
+          ),
+          // Radiant Hot Magenta bloom on top-right / right
+          BoxShadow(
+            color: Prism.magenta.withValues(alpha: active ? 0.32 : 0.08),
+            blurRadius: 52,
+            spreadRadius: 2,
+            offset: const Offset(12, -10),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(28),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 28, sigmaY: 28),
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(28),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.12),
+                width: 1.2,
+              ),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Colors.white.withValues(alpha: 0.09),
+                  const Color(0xFF0F1422).withValues(alpha: 0.82),
+                  const Color(0xFF070912).withValues(alpha: 0.94),
+                ],
+                stops: const [0.0, 0.35, 1.0],
+              ),
+            ),
+            child: Stack(
+              children: [
+                // Top specular refraction sheen
+                Positioned(
+                  top: 0,
+                  left: 20,
+                  right: 20,
+                  height: 1.5,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          Colors.transparent,
+                          Colors.white.withValues(alpha: 0.45),
+                          Prism.cyan.withValues(alpha: 0.5),
+                          Colors.transparent,
+                        ],
+                        stops: const [0.0, 0.25, 0.75, 1.0],
+                      ),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 18, 16, 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _TabletHeader(c: c, active: active),
+                      const SizedBox(height: 14),
+                      _TabletSecondaryPills(c: c, active: active),
+                      const SizedBox(height: 16),
+                      _LiquidGlassGraphicEq(c: c, active: active),
+                      const SizedBox(height: 14),
+                      _LiquidGlassWaveformVisualizer(
+                        animation: waveAnimation,
+                        active: active,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _TabletHeader extends StatelessWidget {
+  const _TabletHeader({required this.c, required this.active});
+  final EqController c;
+  final bool active;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        // Left hamburger/menu or back icon
+        GestureDetector(
+          onTap: () {
+            HapticFeedback.lightImpact();
+            Navigator.maybePop(context);
+          },
+          child: Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.white.withValues(alpha: 0.05),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.12),
+                width: 1,
+              ),
+            ),
+            child: const Icon(
+              Icons.menu_rounded,
+              size: 20,
+              color: Colors.white70,
+            ),
+          ),
+        ),
+
+        // Center Title: Gradient SPECTRAFLOW + Subtitle EQ & DSP
+        Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            for (var i = 0; i < 10; i++)
-              Expanded(
-                child: _BandSlider(
-                  value: c.fine[i],
-                  label: _hz(EqController.graphicFreqs[i]),
-                  onChanged: (v) => c.setFine(i, v),
-                  onReset: () => c.setFine(i, 0),
+            ShaderMask(
+              shaderCallback: (bounds) => const LinearGradient(
+                colors: [Color(0xFF00F2FE), Color(0xFFFF007F)],
+                stops: [0.0, 1.0],
+              ).createShader(bounds),
+              child: const Text(
+                'SPECTRAFLOW',
+                style: TextStyle(
+                  fontSize: 19,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 2.2,
+                  color: Colors.white,
                 ),
               ),
+            ),
+            const SizedBox(height: 1),
+            Text(
+              'EQ & DSP',
+              style: TextStyle(
+                fontFamily: Prism.mono,
+                fontSize: 10,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 1.6,
+                color: active ? Prism.cyan.withValues(alpha: 0.85) : Prism.textDim,
+              ),
+            ),
+          ],
+        ),
+
+        // Right Power Toggle Button with neon glow
+        GestureDetector(
+          onTap: () {
+            HapticFeedback.mediumImpact();
+            c.setEnabled(!c.enabled);
+          },
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 250),
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: active
+                  ? Prism.cyan.withValues(alpha: 0.16)
+                  : Colors.white.withValues(alpha: 0.04),
+              border: Border.all(
+                color: active
+                    ? Prism.cyan.withValues(alpha: 0.8)
+                    : Colors.white.withValues(alpha: 0.15),
+                width: 1.2,
+              ),
+              boxShadow: active
+                  ? [
+                      BoxShadow(
+                        color: Prism.cyan.withValues(alpha: 0.45),
+                        blurRadius: 14,
+                        spreadRadius: 1,
+                      ),
+                    ]
+                  : null,
+            ),
+            child: Icon(
+              Icons.power_settings_new_rounded,
+              size: 19,
+              color: active ? Prism.cyan : Colors.white38,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _TabletSecondaryPills extends StatelessWidget {
+  const _TabletSecondaryPills({required this.c, required this.active});
+  final EqController c;
+  final bool active;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        // PRESETS v Pill
+        GestureDetector(
+          onTap: () => _showPresetsModal(context, c),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              color: Colors.white.withValues(alpha: 0.05),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.15),
+                width: 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.25),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.tune_rounded, size: 14, color: Colors.white70),
+                const SizedBox(width: 6),
+                ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 110),
+                  child: Text(
+                    c.preset.name.toUpperCase(),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.8,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 4),
+                const Icon(Icons.keyboard_arrow_down_rounded, size: 16, color: Colors.white70),
+              ],
+            ),
+          ),
+        ),
+
+        // BYPASS & RESET Pills
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            GestureDetector(
+              onTap: () {
+                HapticFeedback.selectionClick();
+                c.setEnabled(!c.enabled);
+              },
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  color: !c.enabled
+                      ? Prism.magenta.withValues(alpha: 0.22)
+                      : Colors.white.withValues(alpha: 0.05),
+                  border: Border.all(
+                    color: !c.enabled
+                        ? Prism.magenta.withValues(alpha: 0.8)
+                        : Colors.white.withValues(alpha: 0.15),
+                    width: 1,
+                  ),
+                  boxShadow: !c.enabled
+                      ? [
+                          BoxShadow(
+                            color: Prism.magenta.withValues(alpha: 0.4),
+                            blurRadius: 10,
+                          ),
+                        ]
+                      : null,
+                ),
+                child: Text(
+                  'BYPASS',
+                  style: TextStyle(
+                    fontFamily: Prism.mono,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.6,
+                    color: !c.enabled ? Colors.white : Colors.white70,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            GestureDetector(
+              onTap: () {
+                HapticFeedback.mediumImpact();
+                c.reset();
+              },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16),
+                  color: Colors.white.withValues(alpha: 0.05),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.15),
+                    width: 1,
+                  ),
+                ),
+                child: const Text(
+                  'RESET',
+                  style: TextStyle(
+                    fontFamily: Prism.mono,
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.6,
+                    color: Colors.white70,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+void _showPresetsModal(BuildContext context, EqController c) {
+  showModalBottomSheet(
+    context: context,
+    backgroundColor: Colors.transparent,
+    isScrollControlled: true,
+    builder: (ctx) => Container(
+      height: MediaQuery.of(ctx).size.height * 0.65,
+      decoration: BoxDecoration(
+        color: const Color(0xFF0C101A).withValues(alpha: 0.95),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+        border: Border.all(color: Colors.white12),
+        boxShadow: [
+          BoxShadow(
+            color: Prism.cyan.withValues(alpha: 0.2),
+            blurRadius: 30,
+            offset: const Offset(0, -4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Container(
+            margin: const EdgeInsets.only(top: 12, bottom: 8),
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: Colors.white24,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'SELECT PRESET / PROFILE',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1.2,
+                    color: Colors.white,
+                  ),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  child: const Text('Done', style: TextStyle(color: Prism.cyan)),
+                ),
+              ],
+            ),
+          ),
+          const Divider(color: Colors.white12, height: 1),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              children: [
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 6),
+                  child: Text(
+                    'GENRE PRESETS',
+                    style: TextStyle(color: Colors.white54, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1),
+                  ),
+                ),
+                ...EqPresets.all.map((p) => ListTile(
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  selected: c.preset.id == p.id,
+                  selectedTileColor: Prism.cyan.withValues(alpha: 0.12),
+                  leading: Icon(
+                    c.preset.id == p.id ? Icons.radio_button_checked_rounded : Icons.radio_button_unchecked_rounded,
+                    color: c.preset.id == p.id ? Prism.cyan : Colors.white38,
+                    size: 20,
+                  ),
+                  title: Text(
+                    p.name,
+                    style: TextStyle(
+                      color: c.preset.id == p.id ? Prism.cyan : Colors.white,
+                      fontWeight: c.preset.id == p.id ? FontWeight.bold : FontWeight.w500,
+                    ),
+                  ),
+                  onTap: () {
+                    HapticFeedback.selectionClick();
+                    c.selectPreset(p);
+                    Navigator.pop(ctx);
+                  },
+                )),
+                const SizedBox(height: 12),
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 6),
+                  child: Text(
+                    'AUTOEQ HEADPHONE PROFILES',
+                    style: TextStyle(color: Colors.white54, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1),
+                  ),
+                ),
+                ...AutoEqDatabase.builtinProfiles.map((p) => ListTile(
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  selected: c.preset.id == p.id,
+                  selectedTileColor: Prism.magenta.withValues(alpha: 0.12),
+                  leading: Icon(
+                    c.preset.id == p.id ? Icons.headphones_rounded : Icons.headphones_outlined,
+                    color: c.preset.id == p.id ? Prism.magenta : Colors.white38,
+                    size: 20,
+                  ),
+                  title: Text(
+                    p.displayName,
+                    style: TextStyle(
+                      color: c.preset.id == p.id ? Prism.magenta : Colors.white,
+                      fontWeight: c.preset.id == p.id ? FontWeight.bold : FontWeight.w500,
+                    ),
+                  ),
+                  subtitle: Text(
+                    'Target: ${p.targetCurve}',
+                    style: const TextStyle(color: Colors.white38, fontSize: 11),
+                  ),
+                  onTap: () {
+                    HapticFeedback.selectionClick();
+                    c.selectAutoEqProfile(p);
+                    Navigator.pop(ctx);
+                  },
+                )),
+              ],
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+class _LiquidGlassGraphicEq extends StatefulWidget {
+  const _LiquidGlassGraphicEq({required this.c, required this.active});
+  final EqController c;
+  final bool active;
+
+  @override
+  State<_LiquidGlassGraphicEq> createState() => _LiquidGlassGraphicEqState();
+}
+
+class _LiquidGlassGraphicEqState extends State<_LiquidGlassGraphicEq> {
+  int? _activeDraggingBand;
+
+  @override
+  Widget build(BuildContext context) {
+    final c = widget.c;
+    final active = widget.active;
+
+    return SizedBox(
+      height: 250,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final totalW = constraints.maxWidth;
+          final totalH = constraints.maxHeight;
+
+          const topPad = 24.0;
+          const bottomPad = 28.0;
+          final trackH = totalH - topPad - bottomPad;
+          final midY = topPad + trackH / 2.0;
+
+          final colW = totalW / 10.0;
+          final pts = <Offset>[];
+          for (var i = 0; i < 10; i++) {
+            final cx = colW * (i + 0.5);
+            final gain = c.fine[i];
+            final cy = midY - (gain / EqController.fineRangeDb) * (trackH / 2.0);
+            pts.add(Offset(cx, cy));
+          }
+
+          return Stack(
+            children: [
+              RepaintBoundary(
+                child: CustomPaint(
+                  size: Size(totalW, totalH),
+                  painter: _LiquidGlassFadersAndSplinePainter(
+                    c: c,
+                    pts: pts,
+                    topPad: topPad,
+                    bottomPad: bottomPad,
+                    midY: midY,
+                    trackH: trackH,
+                    colW: colW,
+                    active: active,
+                    draggingBand: _activeDraggingBand,
+                  ),
+                ),
+              ),
+              Row(
+                children: [
+                  for (var i = 0; i < 10; i++)
+                    Expanded(
+                      child: _BandTouchColumn(
+                        index: i,
+                        gain: c.fine[i],
+                        freq: EqController.graphicFreqs[i],
+                        active: active,
+                        onDragStart: () {
+                          setState(() => _activeDraggingBand = i);
+                        },
+                        onDragEnd: () {
+                          setState(() => _activeDraggingBand = null);
+                        },
+                        onChanged: (gain) {
+                          c.setFine(i, gain);
+                        },
+                        onReset: () {
+                          HapticFeedback.selectionClick();
+                          c.setFine(i, 0.0);
+                        },
+                      ),
+                    ),
+                ],
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _BandTouchColumn extends StatelessWidget {
+  const _BandTouchColumn({
+    required this.index,
+    required this.gain,
+    required this.freq,
+    required this.active,
+    required this.onDragStart,
+    required this.onDragEnd,
+    required this.onChanged,
+    required this.onReset,
+  });
+
+  final int index;
+  final double gain;
+  final double freq;
+  final bool active;
+  final VoidCallback onDragStart;
+  final VoidCallback onDragEnd;
+  final ValueChanged<double> onChanged;
+  final VoidCallback onReset;
+
+  @override
+  Widget build(BuildContext context) {
+    final isCyan = index < 5;
+    final accent = isCyan ? Prism.cyan : Prism.magenta;
+    final isNonZero = gain.abs() >= 0.05;
+
+    return Column(
+      children: [
+        SizedBox(
+          height: 20,
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              _db(gain),
+              style: _mono(
+                size: 9.5,
+                color: !active
+                    ? Prism.textDim
+                    : (isNonZero ? accent : Colors.white60),
+                weight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ),
+        Expanded(
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final h = constraints.maxHeight;
+
+              void handleUpdate(double localDy) {
+                final t = (localDy / h).clamp(0.0, 1.0);
+                final raw = (0.5 - t) * 2.0 * EqController.fineRangeDb;
+                final snapped = (raw * 2.0).round() / 2.0;
+                if (snapped != gain) {
+                  if (snapped == 0) {
+                    HapticFeedback.selectionClick();
+                  }
+                  onChanged(snapped);
+                }
+              }
+
+              return GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTapDown: (d) {
+                  onDragStart();
+                  handleUpdate(d.localPosition.dy);
+                },
+                onTapUp: (_) => onDragEnd(),
+                onTapCancel: onDragEnd,
+                onVerticalDragStart: (_) => onDragStart(),
+                onVerticalDragUpdate: (d) => handleUpdate(d.localPosition.dy),
+                onVerticalDragEnd: (_) => onDragEnd(),
+                onVerticalDragCancel: onDragEnd,
+                onDoubleTap: onReset,
+                child: const SizedBox.expand(),
+              );
+            },
+          ),
+        ),
+        SizedBox(
+          height: 22,
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              _hz(freq),
+              style: _mono(
+                size: 10.5,
+                color: !active
+                    ? Prism.textDim
+                    : (isCyan
+                        ? Prism.cyan.withValues(alpha: 0.9)
+                        : Prism.magenta.withValues(alpha: 0.9)),
+                weight: FontWeight.w700,
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _LiquidGlassFadersAndSplinePainter extends CustomPainter {
+  _LiquidGlassFadersAndSplinePainter({
+    required this.c,
+    required this.pts,
+    required this.topPad,
+    required this.bottomPad,
+    required this.midY,
+    required this.trackH,
+    required this.colW,
+    required this.active,
+    this.draggingBand,
+  });
+
+  final EqController c;
+  final List<Offset> pts;
+  final double topPad, bottomPad, midY, trackH, colW;
+  final bool active;
+  final int? draggingBand;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (pts.isEmpty) return;
+
+    final top = topPad;
+    final bottom = size.height - bottomPad;
+
+    // 1. Center Reference Line (0 dB) across all bands
+    final centerLinePaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.14)
+      ..strokeWidth = 1.0;
+    canvas.drawLine(Offset(colW * 0.25, midY), Offset(size.width - colW * 0.25, midY), centerLinePaint);
+
+    final tickPaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.05)
+      ..strokeWidth = 0.8;
+    final yPlus6 = midY - (6.0 / EqController.fineRangeDb) * (trackH / 2.0);
+    final yMinus6 = midY + (6.0 / EqController.fineRangeDb) * (trackH / 2.0);
+    canvas.drawLine(Offset(colW * 0.25, yPlus6), Offset(size.width - colW * 0.25, yPlus6), tickPaint);
+    canvas.drawLine(Offset(colW * 0.25, yMinus6), Offset(size.width - colW * 0.25, yMinus6), tickPaint);
+
+    // 2. Vertical Slot Channels (Cyan neon rails on 0..4, Magenta neon rails on 5..9)
+    for (var i = 0; i < 10; i++) {
+      final cx = pts[i].dx;
+      final cy = pts[i].dy;
+      final isCyan = i < 5;
+      final accent = isCyan ? Prism.cyan : Prism.magenta;
+
+      final slotRect = RRect.fromLTRBR(cx - 3.5, top, cx + 3.5, bottom, const Radius.circular(3.5));
+      // Dark glass trough background
+      canvas.drawRRect(
+        slotRect,
+        Paint()..color = const Color(0x66060914),
+      );
+      // Continuous neon rail halo
+      if (active) {
+        canvas.drawRRect(
+          slotRect,
+          Paint()
+            ..style = PaintingStyle.stroke
+            ..strokeWidth = 1.2
+            ..color = accent.withValues(alpha: 0.3)
+            ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2.5),
+        );
+      }
+      canvas.drawRRect(
+        slotRect,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 0.9
+          ..color = active ? accent.withValues(alpha: 0.5) : Colors.white.withValues(alpha: 0.08),
+      );
+
+      // Active fill beam between 0dB and current thumb position
+      if (active && (cy - midY).abs() > 1.0) {
+        final litTop = math.min(cy, midY);
+        final litBottom = math.max(cy, midY);
+        final litRect = RRect.fromLTRBR(cx - 2.8, litTop, cx + 2.8, litBottom, const Radius.circular(2.8));
+
+        // Broad outer beam glow
+        canvas.drawRRect(
+          litRect,
+          Paint()
+            ..color = accent.withValues(alpha: 0.55)
+            ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6.0),
+        );
+        // Solid saturated beam
+        canvas.drawRRect(
+          litRect,
+          Paint()..color = accent.withValues(alpha: 0.88),
+        );
+        // Hyper-bright white center spine
+        canvas.drawLine(
+          Offset(cx, litTop),
+          Offset(cx, litBottom),
+          Paint()
+            ..color = Colors.white.withValues(alpha: 0.75)
+            ..strokeWidth = 1.2
+            ..strokeCap = StrokeCap.round,
+        );
+      }
+    }
+
+    // 3. Catmull-Rom Response Spline Curve connecting all 10 thumbs
+    final splinePath = _buildSpline(pts);
+    final splineRect = Rect.fromLTRB(pts.first.dx, top, pts.last.dx, bottom);
+
+    final lineShader = LinearGradient(
+      colors: active
+          ? const [
+              Prism.cyan,
+              Prism.cyan,
+              Prism.violet,
+              Prism.magenta,
+              Prism.magenta,
+            ]
+          : const [Prism.textDim, Prism.textDim],
+      stops: const [0.0, 0.35, 0.55, 0.75, 1.0],
+    ).createShader(splineRect);
+
+    final glowShader = LinearGradient(
+      colors: active
+          ? [
+              Prism.cyan.withValues(alpha: 0.55),
+              Prism.cyan.withValues(alpha: 0.55),
+              Prism.violet.withValues(alpha: 0.45),
+              Prism.magenta.withValues(alpha: 0.55),
+              Prism.magenta.withValues(alpha: 0.55),
+            ]
+          : [Prism.textDim.withValues(alpha: 0.15), Prism.textDim.withValues(alpha: 0.15)],
+      stops: const [0.0, 0.35, 0.55, 0.75, 1.0],
+    ).createShader(splineRect);
+
+    // Pass 1: Broad neon blur bloom
+    canvas.drawPath(
+      splinePath,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 11.0
+        ..shader = glowShader
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8.0),
+    );
+
+    // Pass 2: Vibrant saturated stroke
+    canvas.drawPath(
+      splinePath,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 3.2
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round
+        ..shader = lineShader,
+    );
+
+    // Pass 3: Crisp specular white core line
+    if (active) {
+      canvas.drawPath(
+        splinePath,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.2
+          ..strokeCap = StrokeCap.round
+          ..strokeJoin = StrokeJoin.round
+          ..color = Colors.white.withValues(alpha: 0.7),
+      );
+    }
+
+    // 4. Floating Liquid Glass Capsule Thumbs
+    for (var i = 0; i < 10; i++) {
+      final p = pts[i];
+      final isCyan = i < 5;
+      final accent = isCyan ? Prism.cyan : Prism.magenta;
+      final isDragging = draggingBand == i;
+      final thumbW = isDragging ? 32.0 : 28.0;
+      final thumbH = isDragging ? 18.0 : 16.0;
+
+      final capsuleRRect = RRect.fromRectAndRadius(
+        Rect.fromCenter(center: p, width: thumbW, height: thumbH),
+        Radius.circular(thumbH / 2.0),
+      );
+
+      // Neon outer glow
+      if (active) {
+        canvas.drawRRect(
+          capsuleRRect,
+          Paint()
+            ..color = accent.withValues(alpha: isDragging ? 0.75 : 0.45)
+            ..maskFilter = MaskFilter.blur(BlurStyle.normal, isDragging ? 10.0 : 6.0),
+        );
+      }
+
+      // Glass body
+      canvas.drawRRect(
+        capsuleRRect,
+        Paint()
+          ..shader = LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              Colors.white.withValues(alpha: 0.22),
+              const Color(0xEE121828),
+              const Color(0xFF090C16),
+            ],
+            stops: const [0.0, 0.45, 1.0],
+          ).createShader(capsuleRRect.outerRect),
+      );
+
+      // Glowing outline rim
+      canvas.drawRRect(
+        capsuleRRect,
+        Paint()
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = 1.5
+          ..color = active
+              ? accent.withValues(alpha: 0.95)
+              : Colors.white.withValues(alpha: 0.25),
+      );
+
+      // Specular highlight on top half
+      final topSpecularRRect = RRect.fromRectAndRadius(
+        Rect.fromCenter(
+          center: Offset(p.dx, p.dy - thumbH * 0.25),
+          width: thumbW * 0.7,
+          height: thumbH * 0.35,
+        ),
+        Radius.circular(thumbH * 0.2),
+      );
+      canvas.drawRRect(
+        topSpecularRRect,
+        Paint()..color = Colors.white.withValues(alpha: 0.32),
+      );
+
+      // Inner illuminated core capsule
+      if (active) {
+        final coreRRect = RRect.fromRectAndRadius(
+          Rect.fromCenter(center: p, width: 9.0, height: 3.2),
+          const Radius.circular(1.6),
+        );
+        canvas.drawRRect(
+          coreRRect,
+          Paint()
+            ..color = accent
+            ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 2.5),
+        );
+        canvas.drawRRect(
+          coreRRect,
+          Paint()..color = Colors.white.withValues(alpha: 0.95),
+        );
+      }
+    }
+  }
+
+  Path _buildSpline(List<Offset> pts) {
+    final path = Path();
+    if (pts.isEmpty) return path;
+    if (pts.length == 1) {
+      path.moveTo(pts[0].dx, pts[0].dy);
+      return path;
+    }
+    path.moveTo(pts[0].dx, pts[0].dy);
+    for (var i = 0; i < pts.length - 1; i++) {
+      final p0 = i > 0 ? pts[i - 1] : pts[i];
+      final p1 = pts[i];
+      final p2 = pts[i + 1];
+      final p3 = i < pts.length - 2 ? pts[i + 2] : p2;
+
+      final cp1x = p1.dx + (p2.dx - p0.dx) / 6.0;
+      final cp1y = p1.dy + (p2.dy - p0.dy) / 6.0;
+      final cp2x = p2.dx - (p3.dx - p1.dx) / 6.0;
+      final cp2y = p2.dy - (p3.dy - p1.dy) / 6.0;
+
+      path.cubicTo(cp1x, cp1y, cp2x, cp2y, p2.dx, p2.dy);
+    }
+    return path;
+  }
+
+  @override
+  bool shouldRepaint(covariant _LiquidGlassFadersAndSplinePainter old) => true;
+}
+
+class _LiquidGlassWaveformVisualizer extends StatelessWidget {
+  const _LiquidGlassWaveformVisualizer({
+    required this.animation,
+    required this.active,
+  });
+
+  final Animation<double> animation;
+  final bool active;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 44,
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(14),
+        color: const Color(0x3306080F),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.04),
+          width: 0.8,
+        ),
+      ),
+      child: RepaintBoundary(
+        child: AnimatedBuilder(
+          animation: animation,
+          builder: (context, _) {
+            return CustomPaint(
+              size: const Size(double.infinity, 44),
+              painter: _LiquidGlassWaveformPainter(
+                progress: animation.value,
+                active: active,
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class _LiquidGlassWaveformPainter extends CustomPainter {
+  _LiquidGlassWaveformPainter({required this.progress, required this.active});
+  final double progress;
+  final bool active;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final w = size.width;
+    final h = size.height;
+    final mid = h / 2.0;
+
+    final cyanPath = Path();
+    final magentaPath = Path();
+
+    const steps = 90;
+    final dx = w / steps;
+
+    for (var i = 0; i <= steps; i++) {
+      final x = i * dx;
+      final normX = x / w;
+
+      final window = math.sin(math.pi * normX);
+      final ampMult = active ? 1.0 : 0.25;
+
+      final a1 = 11.0 * window * ampMult;
+      final y1 = mid +
+          a1 *
+              math.sin(2 * math.pi * (normX * 2.2 + progress)) *
+              math.cos(2 * math.pi * (normX * 0.9 - progress * 0.4));
+
+      final a2 = 9.5 * window * ampMult;
+      final y2 = mid +
+          a2 *
+              math.sin(2 * math.pi * (normX * 2.6 - progress * 1.2 + 0.4)) *
+              math.cos(2 * math.pi * (normX * 1.1 + progress * 0.6));
+
+      if (i == 0) {
+        cyanPath.moveTo(x, y1);
+        magentaPath.moveTo(x, y2);
+      } else {
+        cyanPath.lineTo(x, y1);
+        magentaPath.lineTo(x, y2);
+      }
+    }
+
+    // Cyan wave with glow blur and crisp stroke
+    canvas.drawPath(
+      cyanPath,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 5.0
+        ..color = Prism.cyan.withValues(alpha: active ? 0.45 : 0.1)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5.0),
+    );
+    canvas.drawPath(
+      cyanPath,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.8
+        ..strokeCap = StrokeCap.round
+        ..color = Prism.cyan.withValues(alpha: active ? 0.95 : 0.3),
+    );
+
+    // Magenta wave with glow blur and crisp stroke
+    canvas.drawPath(
+      magentaPath,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 5.0
+        ..color = Prism.magenta.withValues(alpha: active ? 0.45 : 0.1)
+        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5.0),
+    );
+    canvas.drawPath(
+      magentaPath,
+      Paint()
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.8
+        ..strokeCap = StrokeCap.round
+        ..color = Prism.magenta.withValues(alpha: active ? 0.95 : 0.3),
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant _LiquidGlassWaveformPainter old) =>
+      old.progress != progress || old.active != active;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Car Acoustic DSP Matrix (Co-Processor Suite)
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _CarAcousticDspMatrixPanel extends StatelessWidget {
+  const _CarAcousticDspMatrixPanel({required this.c, required this.active});
+  final EqController c;
+  final bool active;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(26),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.55),
+            blurRadius: 32,
+            offset: const Offset(0, 14),
+          ),
+          BoxShadow(
+            color: Prism.cyan.withValues(alpha: active ? 0.24 : 0.06),
+            blurRadius: 44,
+            spreadRadius: 1,
+            offset: const Offset(10, -6),
+          ),
+          BoxShadow(
+            color: Prism.magenta.withValues(alpha: active ? 0.24 : 0.06),
+            blurRadius: 44,
+            spreadRadius: 1,
+            offset: const Offset(-10, 8),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(26),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 24, sigmaY: 24),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 20),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(26),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.12),
+                width: 1.2,
+              ),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Colors.white.withValues(alpha: 0.08),
+                  const Color(0xFF0F1424).withValues(alpha: 0.82),
+                  const Color(0xFF070912).withValues(alpha: 0.94),
+                ],
+                stops: const [0.0, 0.4, 1.0],
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Center(
+                  child: Text(
+                    'CAR ACOUSTIC DSP MATRIX',
+                    style: TextStyle(
+                      fontFamily: Prism.mono,
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 1.8,
+                      color: Colors.white.withValues(alpha: 0.92),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 18),
+                _DspMatrixSwitchTile(
+                  title: 'Acoustic Space Expand',
+                  accentColor: Prism.cyan,
+                  isOn: c.virtualizer > 0,
+                  onToggle: () {
+                    HapticFeedback.selectionClick();
+                    c.setVirtualizer(c.virtualizer > 0 ? 0.0 : 0.85);
+                  },
+                ),
+                const SizedBox(height: 12),
+                _DspMatrixSwitchTile(
+                  title: 'Dynamic BassEngine',
+                  accentColor: Prism.magenta,
+                  isOn: c.bassBoostDb > 0,
+                  onToggle: () {
+                    HapticFeedback.selectionClick();
+                    c.setBassBoost(c.bassBoostDb > 0 ? 0.0 : 6.0);
+                  },
+                ),
+                const SizedBox(height: 12),
+                _DspMatrixSwitchTile(
+                  title: 'Road-Dampen Clarity',
+                  accentColor: Prism.cyan,
+                  isOn: c.loudnessMb > 0,
+                  onToggle: () {
+                    HapticFeedback.selectionClick();
+                    c.setLoudnessMb(c.loudnessMb > 0 ? 0 : 450);
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DspMatrixSwitchTile extends StatelessWidget {
+  const _DspMatrixSwitchTile({
+    required this.title,
+    required this.accentColor,
+    required this.isOn,
+    required this.onToggle,
+  });
+
+  final String title;
+  final Color accentColor;
+  final bool isOn;
+  final VoidCallback onToggle;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onToggle,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(18),
+          color: isOn
+              ? accentColor.withValues(alpha: 0.07)
+              : Colors.white.withValues(alpha: 0.02),
+          border: Border.all(
+            color: isOn
+                ? accentColor.withValues(alpha: 0.45)
+                : Colors.white.withValues(alpha: 0.06),
+            width: 1,
+          ),
+        ),
+        child: Row(
+          children: [
+            // Left Liquid Glass Bubble Toggle
+            _LiquidToggleSwitch(
+              isOn: isOn,
+              accentColor: accentColor,
+            ),
+            const SizedBox(width: 14),
+            // Title and Status
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 3),
+                  Text(
+                    isOn ? 'Active' : 'Inactive',
+                    style: TextStyle(
+                      fontFamily: Prism.mono,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      color: isOn ? accentColor : Colors.white38,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // Right Liquid Glass Bubble Toggle matching concept art
+            _LiquidToggleSwitch(
+              isOn: isOn,
+              accentColor: accentColor,
+            ),
           ],
         ),
       ),
@@ -1376,166 +2652,78 @@ class _BandsCard extends StatelessWidget {
   }
 }
 
-class _BandSlider extends StatelessWidget {
-  const _BandSlider({
-    required this.value,
-    required this.label,
-    required this.onChanged,
-    required this.onReset,
-  });
-
-  final double value;
-  final String label;
-  final ValueChanged<double> onChanged;
-  final VoidCallback onReset;
-
-  static const _pad = 12.0;
+class _LiquidToggleSwitch extends StatelessWidget {
+  const _LiquidToggleSwitch({required this.isOn, required this.accentColor});
+  final bool isOn;
+  final Color accentColor;
 
   @override
   Widget build(BuildContext context) {
-    final valueColor = value.abs() < 0.05
-        ? Prism.textDim
-        : (value > 0 ? Prism.cyan : Prism.magenta);
-    return Column(
-      children: [
-        SizedBox(
-          height: 16,
-          child: FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Text(_db(value),
-                style: _mono(size: 11, color: valueColor, weight: FontWeight.w700)),
-          ),
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 250),
+      curve: Curves.easeOutCubic,
+      width: 54,
+      height: 28,
+      padding: const EdgeInsets.all(2.5),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(14),
+        color: isOn
+            ? accentColor.withValues(alpha: 0.22)
+            : Colors.white.withValues(alpha: 0.05),
+        border: Border.all(
+          color: isOn
+              ? accentColor.withValues(alpha: 0.85)
+              : Colors.white.withValues(alpha: 0.12),
+          width: 1,
         ),
-        const SizedBox(height: 4),
-        Expanded(
-          child: LayoutBuilder(
-            builder: (context, cons) {
-              final h = cons.maxHeight;
-              void update(double dy) {
-                final t = ((dy - _pad) / (h - 2 * _pad)).clamp(0.0, 1.0).toDouble();
-                final raw = (0.5 - t) * 2 * EqController.fineRangeDb;
-                final snapped = (raw * 2).round() / 2; // 0.5 dB steps
-                if (snapped != value) {
-                  if (snapped == 0) HapticFeedback.selectionClick();
-                  onChanged(snapped);
-                }
-              }
-
-              return GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTapDown: (d) => update(d.localPosition.dy),
-                onVerticalDragUpdate: (d) => update(d.localPosition.dy),
-                onDoubleTap: onReset,
-                child: SizedBox.expand(
-                  child: CustomPaint(
-                      painter: _BandPainter(value, EqController.fineRangeDb)),
+        boxShadow: isOn
+            ? [
+                BoxShadow(
+                  color: accentColor.withValues(alpha: 0.45),
+                  blurRadius: 12,
+                  spreadRadius: 1,
                 ),
-              );
-            },
+              ]
+            : null,
+      ),
+      alignment: isOn ? Alignment.centerRight : Alignment.centerLeft,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOutCubic,
+        width: 21,
+        height: 21,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: RadialGradient(
+            center: const Alignment(-0.3, -0.4),
+            colors: isOn
+                ? [
+                    Colors.white,
+                    accentColor,
+                    accentColor.withValues(alpha: 0.8),
+                  ]
+                : [
+                    const Color(0xFF6E7485),
+                    const Color(0xFF2E3342),
+                    const Color(0xFF181B24),
+                  ],
           ),
+          boxShadow: [
+            const BoxShadow(
+              color: Colors.black45,
+              blurRadius: 4,
+              offset: Offset(0, 2),
+            ),
+            if (isOn)
+              BoxShadow(
+                color: accentColor.withValues(alpha: 0.8),
+                blurRadius: 8,
+              ),
+          ],
         ),
-        const SizedBox(height: 6),
-        Text(label, style: _mono(size: 10.5)),
-      ],
+      ),
     );
   }
-}
-
-class _BandPainter extends CustomPainter {
-  _BandPainter(this.value, this.range);
-  final double value, range;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    const pad = _BandSlider._pad;
-    final cx = size.width / 2;
-    final top = pad, bottom = size.height - pad, mid = (top + bottom) / 2;
-    final y = mid - (value / range) * ((bottom - top) / 2);
-    final zero = value.abs() < 0.05;
-    final color = zero ? Prism.textDim : (value > 0 ? Prism.cyan : Prism.magenta);
-
-    // Recessed track
-    canvas.drawRRect(
-      RRect.fromLTRBR(cx - 2.5, top, cx + 2.5, bottom, const Radius.circular(2.5)),
-      Paint()..color = _a(Colors.black, 0.55),
-    );
-    canvas.drawRRect(
-      RRect.fromLTRBR(cx - 2.5, top, cx + 2.5, bottom, const Radius.circular(2.5)),
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 0.8
-        ..color = _a(Colors.white, 0.12),
-    );
-    // Zero tick
-    canvas.drawLine(
-      Offset(cx - 9, mid),
-      Offset(cx + 9, mid),
-      Paint()
-        ..color = _a(Colors.white, 0.28)
-        ..strokeWidth = 1.2,
-    );
-    // Lit segment from zero to thumb
-    if (!zero) {
-      final rect = Rect.fromLTRB(cx - 2, math.min(y, mid), cx + 2, math.max(y, mid));
-      canvas.drawRect(
-        rect,
-        Paint()
-          ..color = _a(color, 0.6)
-          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 5),
-      );
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(rect, const Radius.circular(2)),
-        Paint()..color = color,
-      );
-    }
-    // Matte thumb with inner bevel and LED core
-    final o = Offset(cx, y);
-    canvas.drawCircle(
-      o + const Offset(0, 3),
-      10,
-      Paint()
-        ..color = _a(Colors.black, 0.6)
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4),
-    );
-    canvas.drawCircle(
-      o,
-      10,
-      Paint()
-        ..shader = const RadialGradient(
-          center: Alignment(-0.35, -0.45),
-          colors: [Prism.matteHi, Prism.matteLo],
-        ).createShader(Rect.fromCircle(center: o, radius: 10)),
-    );
-    canvas.drawCircle(
-      o,
-      10,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1.2
-        ..color = _a(Colors.white, 0.22),
-    );
-    canvas.drawCircle(
-      o,
-      6.5,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 1
-        ..color = _a(Colors.black, 0.6),
-    );
-    if (!zero) {
-      canvas.drawCircle(
-        o,
-        4,
-        Paint()
-          ..color = _a(color, 0.8)
-          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4),
-      );
-    }
-    canvas.drawCircle(o, 2.4, Paint()..color = zero ? _a(Colors.white, 0.45) : color);
-  }
-
-  @override
-  bool shouldRepaint(covariant _BandPainter old) => old.value != value;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────

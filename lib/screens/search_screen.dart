@@ -83,7 +83,7 @@ class _SearchScreenState extends State<SearchScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
-                    'YouTube playlist detected! Would you like to enqueue all tracks with artwork & synchronized lyrics (.lrc)?',
+                    'Online playlist detected! Would you like to enqueue all tracks with artwork & synchronized lyrics (.lrc)?',
                     style: TextStyle(color: Colors.white70, fontSize: 13, height: 1.4),
                   ),
                   const SizedBox(height: 16),
@@ -320,7 +320,7 @@ class _SearchScreenState extends State<SearchScreen> {
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('No accurate audio found for "${track.title}". Try searching with the artist name or paste a YouTube link.'),
+            content: Text('No accurate audio found for "${track.title}". Try searching with the artist name or paste a direct stream link.'),
             duration: const Duration(seconds: 4),
             backgroundColor: SpectraTheme.darkSurface,
           ),
@@ -575,7 +575,7 @@ class _SearchScreenState extends State<SearchScreen> {
                       controller: _searchController,
                       style: const TextStyle(color: Colors.white),
                       decoration: const InputDecoration(
-                        hintText: 'Search songs, or paste YouTube playlist link...',
+                        hintText: 'Search songs, or paste stream playlist link...',
                         hintStyle: TextStyle(color: Colors.white38, fontSize: 13),
                         border: InputBorder.none,
                       ),
@@ -769,7 +769,7 @@ class _SearchScreenState extends State<SearchScreen> {
                       ),
                       const SizedBox(height: 6),
                       const Text(
-                        'Paste YouTube links or import a CSV file to batch download playlists',
+                        'Paste stream links or import a CSV file to batch download playlists',
                         textAlign: TextAlign.center,
                         style: TextStyle(color: Colors.white38, fontSize: 12, height: 1.4),
                       ),
@@ -787,7 +787,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     children: [
                       CircularProgressIndicator(color: SpectraTheme.cyanWave),
                       SizedBox(height: 14),
-                      Text('Searching live YouTube audio streams...', style: TextStyle(color: Colors.white54)),
+                      Text('Searching live high-resolution audio streams...', style: TextStyle(color: Colors.white54)),
                     ],
                   ),
                 ),
@@ -821,14 +821,10 @@ class _SearchScreenState extends State<SearchScreen> {
                         final localMatch = LocalVaultService.instance.findLocalMatch(track);
                         final isAlreadyInLibrary = localMatch != null;
 
-                        return Container(
-                          margin: const EdgeInsets.only(bottom: 6),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.04),
-                            borderRadius: BorderRadius.circular(14),
-                          ),
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 2),
                           child: ListTile(
-                            contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                             leading: Stack(
                               alignment: Alignment.center,
                               children: [
@@ -892,7 +888,6 @@ class _SearchScreenState extends State<SearchScreen> {
                                     decoration: BoxDecoration(
                                       color: Colors.greenAccent.withValues(alpha: 0.15),
                                       borderRadius: BorderRadius.circular(6),
-                                      border: Border.all(color: Colors.greenAccent.withValues(alpha: 0.4)),
                                     ),
                                     child: const Row(
                                       mainAxisSize: MainAxisSize.min,
