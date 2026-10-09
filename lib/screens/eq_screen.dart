@@ -193,45 +193,147 @@ class EqResponse {
 // ─────────────────────────────────────────────────────────────────────────────
 
 class EqPreset {
-  const EqPreset(this.id, this.name, this.bands);
+  const EqPreset(
+    this.id,
+    this.name,
+    this.bands, {
+    this.faderGains,
+    this.bassBoostDb = 0.0,
+    this.virtualizer = 0.0,
+    this.loudnessMb = 0,
+  });
   final String id, name;
   final List<EqBand> bands;
+  final List<double>? faderGains;
+  final double bassBoostDb;
+  final double virtualizer;
+  final int loudnessMb;
 }
 
 class EqPresets {
   /// True passthrough preset — no bands, all effects neutral. This is the
   /// default state: audio plays unmodified until the user picks a preset
   /// or adjusts a parameter.
-  static const flat = EqPreset('flat', 'Passthrough', []);
-  static const bassBoost = EqPreset('bass', 'Bass boost', [
-    EqBand(EqFilterType.lowShelf, 90, 5, 0.71),
-    EqBand(EqFilterType.peaking, 150, 2, 1.0),
-  ]);
-  static const vocalSmooth = EqPreset('vocal', 'Vocal smooth', [
-    EqBand(EqFilterType.peaking, 1500, 1.5, 1.0),
-    EqBand(EqFilterType.peaking, 4000, -2, 1.0),
-    EqBand(EqFilterType.peaking, 7000, -2, 1.2),
-  ]);
-  static const trebleBoost = EqPreset('treble', 'Treble boost', [
-    EqBand(EqFilterType.highShelf, 8000, 4, 0.71),
-  ]);
-  static const warm = EqPreset('warm', 'Warm', [
-    EqBand(EqFilterType.lowShelf, 200, 2.5, 0.71),
-    EqBand(EqFilterType.highShelf, 6000, -1.5, 0.71),
-  ]);
-  static const bright = EqPreset('bright', 'Bright', [
-    EqBand(EqFilterType.highShelf, 5000, 3, 0.71),
-    EqBand(EqFilterType.peaking, 10000, 1.5, 1.0),
-  ]);
-  static const loudness = EqPreset('loudness', 'Loudness', [
-    EqBand(EqFilterType.lowShelf, 80, 4, 0.71),
-    EqBand(EqFilterType.highShelf, 10000, 3, 0.71),
-  ]);
+  static const flat = EqPreset(
+    'flat',
+    'Passthrough',
+    [],
+    faderGains: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
+    bassBoostDb: 0.0,
+  );
+
+  static const bassBoost = EqPreset(
+    'bass',
+    'Bass boost',
+    [
+      EqBand(EqFilterType.lowShelf, 90, 5, 0.71),
+      EqBand(EqFilterType.peaking, 150, 2, 1.0),
+    ],
+    faderGains: [6.0, 5.5, 4.0, 2.0, 0.5, 0.0, 0.0, 0.0, 0.0, 0.0],
+    bassBoostDb: 6.5,
+  );
+
+  static const vocalSmooth = EqPreset(
+    'vocal',
+    'Vocal smooth',
+    [
+      EqBand(EqFilterType.peaking, 1500, 1.5, 1.0),
+      EqBand(EqFilterType.peaking, 4000, -2, 1.0),
+      EqBand(EqFilterType.peaking, 7000, -2, 1.2),
+    ],
+    faderGains: [-1.0, -0.5, 0.0, 0.5, 1.5, 2.5, 2.0, 0.5, -1.0, -1.5],
+    bassBoostDb: 0.0,
+  );
+
+  static const trebleBoost = EqPreset(
+    'treble',
+    'Treble boost',
+    [
+      EqBand(EqFilterType.highShelf, 8000, 4, 0.71),
+    ],
+    faderGains: [0.0, 0.0, 0.0, 0.0, 0.5, 1.5, 2.5, 4.0, 5.5, 6.0],
+    bassBoostDb: 0.0,
+  );
+
+  static const warm = EqPreset(
+    'warm',
+    'Warm',
+    [
+      EqBand(EqFilterType.lowShelf, 200, 2.5, 0.71),
+      EqBand(EqFilterType.highShelf, 6000, -1.5, 0.71),
+    ],
+    faderGains: [4.0, 4.5, 3.5, 2.0, 1.0, 0.0, -0.5, -1.5, -2.0, -3.0],
+    bassBoostDb: 3.5,
+  );
+
+  static const bright = EqPreset(
+    'bright',
+    'Bright',
+    [
+      EqBand(EqFilterType.highShelf, 5000, 3, 0.71),
+      EqBand(EqFilterType.peaking, 10000, 1.5, 1.0),
+    ],
+    faderGains: [-1.0, -0.5, 0.0, 0.5, 1.0, 2.0, 3.0, 4.5, 5.0, 4.0],
+    bassBoostDb: 0.0,
+  );
+
+  static const loudness = EqPreset(
+    'loudness',
+    'Loudness',
+    [
+      EqBand(EqFilterType.lowShelf, 80, 4, 0.71),
+      EqBand(EqFilterType.highShelf, 10000, 3, 0.71),
+    ],
+    faderGains: [5.5, 5.0, 3.5, 1.0, -0.5, -0.5, 1.0, 2.5, 4.5, 5.0],
+    bassBoostDb: 4.5,
+  );
+
+  // Car Cabin Presets
+  static const carSedan = EqPreset(
+    'car_sedan',
+    'Car Space: Sedan',
+    [],
+    faderGains: [5.0, 4.5, 2.0, -1.5, 0.0, 1.0, 1.5, -1.0, 2.0, 1.5],
+    bassBoostDb: 5.5,
+    virtualizer: 0.70,
+    loudnessMb: 350,
+  );
+
+  static const carSuv = EqPreset(
+    'car_suv',
+    'Car Space: SUV',
+    [],
+    faderGains: [6.5, 5.5, 3.0, -1.0, 0.0, 1.5, 2.0, -0.5, 2.5, 2.0],
+    bassBoostDb: 7.0,
+    virtualizer: 0.85,
+    loudnessMb: 450,
+  );
+
+  static const carCompact = EqPreset(
+    'car_compact',
+    'Car Space: Compact',
+    [],
+    faderGains: [4.0, 4.0, 1.5, -1.5, 0.0, 0.5, 1.0, -1.0, 1.5, 1.0],
+    bassBoostDb: 4.5,
+    virtualizer: 0.60,
+    loudnessMb: 280,
+  );
+
+  static const carCoupe = EqPreset(
+    'car_coupe',
+    'Car Space: Coupe',
+    [],
+    faderGains: [4.5, 4.0, 2.0, -1.0, 0.5, 1.0, 1.5, -1.5, 2.0, 1.5],
+    bassBoostDb: 5.0,
+    virtualizer: 0.55,
+    loudnessMb: 250,
+  );
 
   static const all = [flat, bassBoost, vocalSmooth, trebleBoost, warm, bright, loudness];
+  static const carPresets = [carSedan, carSuv, carCompact, carCoupe];
 
   static EqPreset byId(String id) =>
-      all.firstWhere((p) => p.id == id, orElse: () => flat);
+      [...all, ...carPresets].firstWhere((p) => p.id == id, orElse: () => flat);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -284,13 +386,17 @@ class EqController extends ChangeNotifier {
   bool autoHeadroom = true;
   double _peakDb = 0;
 
-  /// Preset filters + fine-tune sliders. Send this to the native processor.
-  List<EqBand> get effectiveBands => [
-        ...preset.bands,
-        for (var i = 0; i < 10; i++)
-          if (fine[i].abs() > 0.05)
-            EqBand(EqFilterType.peaking, graphicFreqs[i], fine[i], _fineQ),
-      ];
+  /// Parametric preset filters or 10 graphic fine-tune sliders for the native processor.
+  List<EqBand> get effectiveBands {
+    if (preset.bands.isNotEmpty) {
+      return preset.bands;
+    }
+    return [
+      for (var i = 0; i < 10; i++)
+        if (fine[i].abs() > 0.05)
+          EqBand(EqFilterType.peaking, graphicFreqs[i], fine[i], _fineQ),
+    ];
+  }
 
   double get headroomDb => autoHeadroom ? -math.max(0.0, _peakDb) : 0.0;
   double get totalPreampDb => preampDb + headroomDb;
@@ -303,7 +409,7 @@ class EqController extends ChangeNotifier {
     if (!supported) return 'EQ unavailable';
     if (!enabled) return 'EQ off / bit-perfect';
     final isCleanPassthrough =
-        preset.id == 'flat' && !isModified && reverbAmount < 0.01;
+        preset.id == 'flat' && !isModified && reverbAmount < 0.01 && bassBoostDb < 0.1;
     return isCleanPassthrough
         ? 'EQ on / Passthrough'
         : 'EQ on / 32-bit float';
@@ -311,9 +417,24 @@ class EqController extends ChangeNotifier {
 
   void selectPreset(EqPreset p) {
     preset = p;
-    for (var i = 0; i < 10; i++) {
-      fine[i] = 0;
+    if (p.faderGains != null && p.faderGains!.length == 10) {
+      for (var i = 0; i < 10; i++) {
+        fine[i] = p.faderGains![i];
+      }
+    } else if (p.bands.isNotEmpty) {
+      final r = EqResponse(p.bands, fs: sampleRate);
+      for (var i = 0; i < 10; i++) {
+        final db = (r.db(graphicFreqs[i]) * 2).round() / 2.0;
+        fine[i] = db.clamp(-fineRangeDb, fineRangeDb);
+      }
+    } else {
+      for (var i = 0; i < 10; i++) {
+        fine[i] = 0.0;
+      }
     }
+    bassBoostDb = p.bassBoostDb;
+    if (p.virtualizer > 0) virtualizer = p.virtualizer;
+    if (p.loudnessMb > 0) loudnessMb = p.loudnessMb;
     _changed();
   }
 
@@ -327,10 +448,16 @@ class EqController extends ChangeNotifier {
       return EqBand(t, b.frequency, b.gain, b.q);
     }).toList();
 
-    preset = EqPreset(profile.id, profile.displayName, newBands);
+    final r = EqResponse(newBands, fs: sampleRate);
+    final gains = <double>[];
     for (var i = 0; i < 10; i++) {
-      fine[i] = 0;
+      final db = (r.db(graphicFreqs[i]) * 2).round() / 2.0;
+      final clamped = db.clamp(-fineRangeDb, fineRangeDb);
+      gains.add(clamped);
+      fine[i] = clamped;
     }
+
+    preset = EqPreset(profile.id, profile.displayName, newBands, faderGains: gains);
     preampDb = profile.recommendedPreamp;
     _changed();
   }
@@ -367,6 +494,9 @@ class EqController extends ChangeNotifier {
 
   void setFine(int i, double db) {
     fine[i] = db.clamp(-fineRangeDb, fineRangeDb).toDouble();
+    if (preset.id != 'custom') {
+      preset = const EqPreset('custom', 'Custom', []);
+    }
     _changed();
   }
 
@@ -570,17 +700,6 @@ class _EqBodyState extends State<_EqBody> with SingleTickerProviderStateMixin {
                   ],
                 ),
               ),
-              if (c.supported)
-                _MatteButton(
-                  size: 50,
-                  led: c.enabled ? Prism.cyan : null,
-                  onTap: () => c.setEnabled(!c.enabled),
-                  child: _EmbossedIcon(
-                    Icons.power_settings_new_rounded,
-                    size: 22,
-                    color: c.enabled ? Prism.cyan : Prism.textDim,
-                  ),
-                ),
             ],
           ),
           const SizedBox(height: 18),
@@ -612,53 +731,13 @@ class _EqBodyState extends State<_EqBody> with SingleTickerProviderStateMixin {
                   _CarAcousticDspMatrixPanel(c: c, active: active),
                   const SizedBox(height: 16),
 
-                  // 3. Frequency Response Curve
-                  _CurveCard(c: c, active: active),
-                  const _Section('Genre Presets'),
-                  SizedBox(
-                    height: 46,
-                    child: ListView.separated(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: EqPresets.all.length,
-                      separatorBuilder: (_, _) => const SizedBox(width: 8),
-                      itemBuilder: (_, i) {
-                        final p = EqPresets.all[i];
-                        return _PresetChip(
-                          name: p.name,
-                          selected: c.preset.id == p.id,
-                          onTap: () {
-                            HapticFeedback.selectionClick();
-                            c.selectPreset(p);
-                          },
-                        );
-                      },
-                    ),
-                  ),
+                  // 3. Headphone Auto-Gems
                   _Section(
-                    'Headphone AutoEq / JamesDSP',
+                    'Headphone Auto-Gems',
                     trailing: TextButton.icon(
                       onPressed: () => _showImportDialog(context, c),
                       icon: const Icon(Icons.file_download_outlined, size: 14, color: Prism.cyan),
                       label: Text('Import .conf', style: _mono(size: 11, color: Prism.cyan)),
-                    ),
-                  ),
-                  SizedBox(
-                    height: 52,
-                    child: ListView.separated(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: AutoEqDatabase.builtinProfiles.length,
-                      separatorBuilder: (_, _) => const SizedBox(width: 8),
-                      itemBuilder: (_, i) {
-                        final profile = AutoEqDatabase.builtinProfiles[i];
-                        return _AutoEqChip(
-                          profile: profile,
-                          selected: c.preset.id == profile.id,
-                          onTap: () {
-                            HapticFeedback.selectionClick();
-                            c.selectAutoEqProfile(profile);
-                          },
-                        );
-                      },
                     ),
                   ),
                   const _Section('Pre-amp'),
@@ -786,306 +865,7 @@ class _Glass extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Response curve (the memorable element)
-// ─────────────────────────────────────────────────────────────────────────────
 
-class _CurveCard extends StatelessWidget {
-  const _CurveCard({required this.c, required this.active});
-  final EqController c;
-  final bool active;
-
-  @override
-  Widget build(BuildContext context) {
-    return _Glass(
-      padding: const EdgeInsets.fromLTRB(8, 14, 12, 8),
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 8, right: 4, bottom: 8),
-            child: Row(
-              children: [
-                const Text('Frequency response',
-                    style: TextStyle(color: Prism.textDim, fontSize: 12.5)),
-                const Spacer(),
-                Text('pre-amp ${_db(c.totalPreampDb)} dB',
-                    style: _mono(
-                      size: 11.5,
-                      color: c.totalPreampDb < -0.05 ? Prism.cyan : Prism.textDim,
-                      weight: FontWeight.w600,
-                    )),
-              ],
-            ),
-          ),
-          AspectRatio(
-            aspectRatio: 1.9,
-            child: CustomPaint(
-              painter: EqCurvePainter(
-                bands: c.effectiveBands,
-                preampDb: c.totalPreampDb,
-                active: active,
-                fs: c.sampleRate,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class EqCurvePainter extends CustomPainter {
-  EqCurvePainter({
-    required this.bands,
-    required this.preampDb,
-    required this.active,
-    required this.fs,
-  });
-
-  final List<EqBand> bands;
-  final double preampDb, fs;
-  final bool active;
-
-  static const _range = 15.0;
-  static const _gridFreqs = <double>[31, 125, 500, 2000, 8000, 16000];
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    const left = 30.0, bottom = 18.0;
-    final plot = Rect.fromLTRB(left, 6, size.width - 6, size.height - bottom);
-
-    double xOf(double f) =>
-        plot.left + plot.width * (math.log(f / 20) / math.log(1000));
-    double yOf(double db) =>
-        plot.center.dy - (db.clamp(-_range, _range).toDouble() / _range) * (plot.height / 2);
-
-    // Grid
-    final gridPaint = Paint()
-      ..color = Prism.stroke
-      ..strokeWidth = 1;
-    for (final f in _gridFreqs) {
-      final x = xOf(f);
-      canvas.drawLine(Offset(x, plot.top), Offset(x, plot.bottom), gridPaint);
-      _label(canvas, _hz(f), Offset(x, plot.bottom + 9), center: true);
-    }
-    for (final db in const [-12, -6, 0, 6, 12]) {
-      final y = yOf(db.toDouble());
-      canvas.drawLine(
-        Offset(plot.left, y),
-        Offset(plot.right, y),
-        db == 0
-            ? (Paint()
-              ..color = _a(Colors.white, 0.24)
-              ..strokeWidth = 1.2)
-            : gridPaint,
-      );
-      _label(canvas, db == 0 ? '0' : _db(db.toDouble()), Offset(plot.left - 6, y),
-          right: true);
-    }
-
-    // Curve
-    final r = EqResponse(bands, fs: fs);
-    const n = 220;
-    final path = Path();
-    for (var i = 0; i <= n; i++) {
-      final f = 20 * math.pow(1000, i / n).toDouble();
-      final y = yOf(active ? r.db(f) + preampDb : 0);
-      final x = xOf(f);
-      i == 0 ? path.moveTo(x, y) : path.lineTo(x, y);
-    }
-
-    canvas.save();
-    canvas.clipRect(plot.inflate(2));
-
-    // Fill toward the zero line: cyan for boosts, magenta for cuts.
-    final fillPath = Path.from(path)
-      ..lineTo(plot.right, yOf(0))
-      ..lineTo(plot.left, yOf(0))
-      ..close();
-    canvas.drawPath(
-      fillPath,
-      Paint()
-        ..shader = LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [_a(Prism.cyan, 0.30), _a(Prism.violet, 0.03), _a(Prism.magenta, 0.30)],
-          stops: const [0, 0.5, 1],
-        ).createShader(plot),
-    );
-
-    final lineColors = active
-        ? const [Prism.cyan, Prism.violet, Prism.magenta]
-        : const [Prism.textDim, Prism.textDim];
-    final lineShader = LinearGradient(colors: lineColors).createShader(plot);
-    final glowShader =
-        LinearGradient(colors: [for (final c in lineColors) _a(c, 0.55)]).createShader(plot);
-
-    // Neon glow trail, then the crisp line.
-    canvas.drawPath(
-      path,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 10
-        ..shader = glowShader
-        ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 9),
-    );
-    canvas.drawPath(
-      path,
-      Paint()
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = 2.6
-        ..strokeCap = StrokeCap.round
-        ..strokeJoin = StrokeJoin.round
-        ..shader = lineShader,
-    );
-    canvas.restore();
-  }
-
-  void _label(Canvas c, String s, Offset o, {bool center = false, bool right = false}) {
-    final tp = TextPainter(
-      text: TextSpan(text: s, style: _mono(size: 9.5, weight: FontWeight.w600)),
-      textDirection: TextDirection.ltr,
-    )..layout();
-    final dx = center ? o.dx - tp.width / 2 : (right ? o.dx - tp.width : o.dx);
-    tp.paint(c, Offset(dx, o.dy - tp.height / 2));
-  }
-
-  @override
-  bool shouldRepaint(covariant EqCurvePainter old) => true;
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// Presets
-// ─────────────────────────────────────────────────────────────────────────────
-
-class _PresetChip extends StatelessWidget {
-  const _PresetChip({required this.name, required this.selected, required this.onTap});
-  final String name;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: RepaintBoundary(
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 180),
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-                color: selected
-                    ? Prism.cyan.withValues(alpha: 0.20)
-                    : Colors.white.withValues(alpha: 0.05),
-                border: Border.all(
-                  color: selected ? _a(Prism.cyan, 0.75) : Colors.white.withValues(alpha: 0.12),
-                ),
-                boxShadow: selected
-                    ? [BoxShadow(color: _a(Prism.cyan, 0.28), blurRadius: 16)]
-                    : null,
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  _Led(on: selected),
-                  const SizedBox(width: 9),
-                  Text(
-                    name,
-                    style: TextStyle(
-                      color: selected ? Prism.text : Prism.textDim,
-                      fontWeight: selected ? FontWeight.w600 : FontWeight.w500,
-                      fontSize: 13.5,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _AutoEqChip extends StatelessWidget {
-  const _AutoEqChip({
-    required this.profile,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final AutoEqProfile profile;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final icon = profile.deviceType == AutoEqDeviceType.inEar
-        ? Icons.headphones_battery_rounded
-        : Icons.headphones_rounded;
-
-    return GestureDetector(
-      onTap: onTap,
-      child: RepaintBoundary(
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(18),
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 180),
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(18),
-                color: selected
-                    ? Prism.cyan.withValues(alpha: 0.20)
-                    : Colors.white.withValues(alpha: 0.05),
-                border: Border.all(
-                  color: selected ? _a(Prism.cyan, 0.75) : Colors.white.withValues(alpha: 0.12),
-                ),
-                boxShadow: selected
-                    ? [BoxShadow(color: _a(Prism.cyan, 0.25), blurRadius: 14)]
-                    : null,
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(icon, size: 16, color: selected ? Prism.cyan : Prism.textDim),
-                  const SizedBox(width: 8),
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        profile.displayName,
-                        style: TextStyle(
-                          color: selected ? Prism.text : Prism.textDim,
-                          fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                          fontSize: 12.5,
-                        ),
-                      ),
-                      Text(
-                        '${profile.targetCurve.split(' ')[0]} • ${profile.bands.length} bands',
-                        style: TextStyle(
-                          color: selected ? Prism.cyan : Colors.white38,
-                          fontSize: 10,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
 
 void _showImportDialog(BuildContext context, EqController c) {
   final textCtrl = TextEditingController();
@@ -1500,30 +1280,8 @@ class _TabletHeader extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        // Left hamburger/menu or back icon
-        GestureDetector(
-          onTap: () {
-            HapticFeedback.lightImpact();
-            Navigator.maybePop(context);
-          },
-          child: Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.white.withValues(alpha: 0.05),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.12),
-                width: 1,
-              ),
-            ),
-            child: const Icon(
-              Icons.menu_rounded,
-              size: 20,
-              color: Colors.white70,
-            ),
-          ),
-        ),
+        // Left spacer to keep center title balanced
+        const SizedBox(width: 36),
 
         // Center Title: Gradient SPECTRAFLOW + Subtitle EQ & DSP
         Column(
@@ -1805,6 +1563,36 @@ void _showPresetsModal(BuildContext context, EqController c) {
                   selectedTileColor: Prism.cyan.withValues(alpha: 0.12),
                   leading: Icon(
                     c.preset.id == p.id ? Icons.radio_button_checked_rounded : Icons.radio_button_unchecked_rounded,
+                    color: c.preset.id == p.id ? Prism.cyan : Colors.white38,
+                    size: 20,
+                  ),
+                  title: Text(
+                    p.name,
+                    style: TextStyle(
+                      color: c.preset.id == p.id ? Prism.cyan : Colors.white,
+                      fontWeight: c.preset.id == p.id ? FontWeight.bold : FontWeight.w500,
+                    ),
+                  ),
+                  onTap: () {
+                    HapticFeedback.selectionClick();
+                    c.selectPreset(p);
+                    Navigator.pop(ctx);
+                  },
+                )),
+                const SizedBox(height: 12),
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 6),
+                  child: Text(
+                    'CAR CABIN ACOUSTIC PRESETS',
+                    style: TextStyle(color: Colors.white54, fontSize: 11, fontWeight: FontWeight.bold, letterSpacing: 1),
+                  ),
+                ),
+                ...EqPresets.carPresets.map((p) => ListTile(
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  selected: c.preset.id == p.id,
+                  selectedTileColor: Prism.cyan.withValues(alpha: 0.12),
+                  leading: Icon(
+                    c.preset.id == p.id ? Icons.directions_car_filled_rounded : Icons.directions_car_outlined,
                     color: c.preset.id == p.id ? Prism.cyan : Colors.white38,
                     size: 20,
                   ),
@@ -2172,7 +1960,13 @@ class _LiquidGlassFadersAndSplinePainter extends CustomPainter {
               Prism.magenta,
               Prism.magenta,
             ]
-          : const [Prism.textDim, Prism.textDim],
+          : const [
+              Prism.textDim,
+              Prism.textDim,
+              Prism.textDim,
+              Prism.textDim,
+              Prism.textDim,
+            ],
       stops: const [0.0, 0.35, 0.55, 0.75, 1.0],
     ).createShader(splineRect);
 
@@ -2185,7 +1979,13 @@ class _LiquidGlassFadersAndSplinePainter extends CustomPainter {
               Prism.magenta.withValues(alpha: 0.55),
               Prism.magenta.withValues(alpha: 0.55),
             ]
-          : [Prism.textDim.withValues(alpha: 0.15), Prism.textDim.withValues(alpha: 0.15)],
+          : [
+              Prism.textDim.withValues(alpha: 0.15),
+              Prism.textDim.withValues(alpha: 0.15),
+              Prism.textDim.withValues(alpha: 0.15),
+              Prism.textDim.withValues(alpha: 0.15),
+              Prism.textDim.withValues(alpha: 0.15),
+            ],
       stops: const [0.0, 0.35, 0.55, 0.75, 1.0],
     ).createShader(splineRect);
 
@@ -2464,7 +2264,7 @@ class _LiquidGlassWaveformPainter extends CustomPainter {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Car Acoustic DSP Matrix (Co-Processor Suite)
+// Car Acoustic DSP Matrix (Auto Cabin Space Calibration)
 // ─────────────────────────────────────────────────────────────────────────────
 
 class _CarAcousticDspMatrixPanel extends StatelessWidget {
@@ -2474,6 +2274,11 @@ class _CarAcousticDspMatrixPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isCarActive = c.preset.id.startsWith('car_');
+    final activeCarName = isCarActive
+        ? c.preset.name.replaceAll('Car Space: ', '')
+        : 'Off';
+
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(26),
@@ -2523,47 +2328,152 @@ class _CarAcousticDspMatrixPanel extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Center(
-                  child: Text(
-                    'CAR ACOUSTIC DSP MATRIX',
-                    style: TextStyle(
-                      fontFamily: Prism.mono,
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 1.8,
-                      color: Colors.white.withValues(alpha: 0.92),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.directions_car_filled_rounded,
+                          size: 18,
+                          color: isCarActive ? Prism.cyan : Colors.white70,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'CAR ACOUSTIC DSP MATRIX',
+                          style: TextStyle(
+                            fontFamily: Prism.mono,
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 1.4,
+                            color: Colors.white.withValues(alpha: 0.92),
+                          ),
+                        ),
+                      ],
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                      decoration: BoxDecoration(
+                        color: isCarActive
+                            ? Prism.cyan.withValues(alpha: 0.18)
+                            : Colors.white.withValues(alpha: 0.05),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: isCarActive
+                              ? Prism.cyan.withValues(alpha: 0.5)
+                              : Colors.white10,
+                        ),
+                      ),
+                      child: Text(
+                        isCarActive ? activeCarName.toUpperCase() : 'OFF',
+                        style: _mono(
+                          size: 10,
+                          color: isCarActive ? Prism.cyan : Colors.white38,
+                          weight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'Auto-calibrates DSP matrix & faders for cabin acoustic space, compensating for road rumble, windshield glass reflections, and interior cubic volume.',
+                  style: TextStyle(
+                    fontSize: 12,
+                    height: 1.4,
+                    color: Colors.white.withValues(alpha: 0.65),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // AUTO-CALIBRATE BUTTON
+                GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: () {
+                    HapticFeedback.mediumImpact();
+                    _showCarSpaceDialog(context, c);
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 13, horizontal: 16),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      gradient: LinearGradient(
+                        colors: [
+                          Prism.cyan.withValues(alpha: 0.24),
+                          Prism.violet.withValues(alpha: 0.18),
+                        ],
+                      ),
+                      border: Border.all(
+                        color: Prism.cyan.withValues(alpha: 0.7),
+                        width: 1.2,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Prism.cyan.withValues(alpha: 0.25),
+                          blurRadius: 16,
+                          spreadRadius: 1,
+                        ),
+                      ],
+                    ),
+                    child: const Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.auto_awesome_rounded, color: Prism.cyan, size: 18),
+                        SizedBox(width: 10),
+                        Text(
+                          'AUTO-CALIBRATE CABIN SPACE',
+                          style: TextStyle(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 1.2,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
-                const SizedBox(height: 18),
-                _DspMatrixSwitchTile(
-                  title: 'Acoustic Space Expand',
-                  accentColor: Prism.cyan,
-                  isOn: c.virtualizer > 0,
-                  onToggle: () {
-                    HapticFeedback.selectionClick();
-                    c.setVirtualizer(c.virtualizer > 0 ? 0.0 : 0.85);
-                  },
-                ),
                 const SizedBox(height: 12),
-                _DspMatrixSwitchTile(
-                  title: 'Dynamic BassEngine',
-                  accentColor: Prism.magenta,
-                  isOn: c.bassBoostDb > 0,
-                  onToggle: () {
-                    HapticFeedback.selectionClick();
-                    c.setBassBoost(c.bassBoostDb > 0 ? 0.0 : 6.0);
-                  },
-                ),
-                const SizedBox(height: 12),
-                _DspMatrixSwitchTile(
-                  title: 'Road-Dampen Clarity',
-                  accentColor: Prism.cyan,
-                  isOn: c.loudnessMb > 0,
-                  onToggle: () {
-                    HapticFeedback.selectionClick();
-                    c.setLoudnessMb(c.loudnessMb > 0 ? 0 : 450);
-                  },
+
+                // Quick vehicle cabin selector chips
+                Row(
+                  children: [
+                    _CarSpaceChip(
+                      label: 'Sedan',
+                      isSelected: c.preset.id == 'car_sedan',
+                      onTap: () {
+                        HapticFeedback.selectionClick();
+                        c.selectPreset(EqPresets.carSedan);
+                      },
+                    ),
+                    const SizedBox(width: 8),
+                    _CarSpaceChip(
+                      label: 'SUV',
+                      isSelected: c.preset.id == 'car_suv',
+                      onTap: () {
+                        HapticFeedback.selectionClick();
+                        c.selectPreset(EqPresets.carSuv);
+                      },
+                    ),
+                    const SizedBox(width: 8),
+                    _CarSpaceChip(
+                      label: 'Compact',
+                      isSelected: c.preset.id == 'car_compact',
+                      onTap: () {
+                        HapticFeedback.selectionClick();
+                        c.selectPreset(EqPresets.carCompact);
+                      },
+                    ),
+                    const SizedBox(width: 8),
+                    _CarSpaceChip(
+                      label: 'Coupe',
+                      isSelected: c.preset.id == 'car_coupe',
+                      onTap: () {
+                        HapticFeedback.selectionClick();
+                        c.selectPreset(EqPresets.carCoupe);
+                      },
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -2574,153 +2484,228 @@ class _CarAcousticDspMatrixPanel extends StatelessWidget {
   }
 }
 
-class _DspMatrixSwitchTile extends StatelessWidget {
-  const _DspMatrixSwitchTile({
-    required this.title,
-    required this.accentColor,
-    required this.isOn,
-    required this.onToggle,
+class _CarSpaceChip extends StatelessWidget {
+  const _CarSpaceChip({
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
   });
 
-  final String title;
-  final Color accentColor;
-  final bool isOn;
-  final VoidCallback onToggle;
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onToggle,
-      behavior: HitTestBehavior.opaque,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(18),
-          color: isOn
-              ? accentColor.withValues(alpha: 0.07)
-              : Colors.white.withValues(alpha: 0.02),
-          border: Border.all(
-            color: isOn
-                ? accentColor.withValues(alpha: 0.45)
-                : Colors.white.withValues(alpha: 0.06),
-            width: 1,
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(vertical: 9),
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(14),
+            color: isSelected
+                ? Prism.cyan.withValues(alpha: 0.22)
+                : Colors.white.withValues(alpha: 0.04),
+            border: Border.all(
+              color: isSelected
+                  ? Prism.cyan.withValues(alpha: 0.8)
+                  : Colors.white.withValues(alpha: 0.1),
+              width: 1,
+            ),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: Prism.cyan.withValues(alpha: 0.3),
+                      blurRadius: 10,
+                    ),
+                  ]
+                : null,
           ),
-        ),
-        child: Row(
-          children: [
-            // Left Liquid Glass Bubble Toggle
-            _LiquidToggleSwitch(
-              isOn: isOn,
-              accentColor: accentColor,
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+              color: isSelected ? Colors.white : Colors.white60,
             ),
-            const SizedBox(width: 14),
-            // Title and Status
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: const TextStyle(
-                      fontSize: 13.5,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(height: 3),
-                  Text(
-                    isOn ? 'Active' : 'Inactive',
-                    style: TextStyle(
-                      fontFamily: Prism.mono,
-                      fontSize: 11,
-                      fontWeight: FontWeight.w600,
-                      color: isOn ? accentColor : Colors.white38,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            // Right Liquid Glass Bubble Toggle matching concept art
-            _LiquidToggleSwitch(
-              isOn: isOn,
-              accentColor: accentColor,
-            ),
-          ],
+          ),
         ),
       ),
     );
   }
 }
 
-class _LiquidToggleSwitch extends StatelessWidget {
-  const _LiquidToggleSwitch({required this.isOn, required this.accentColor});
-  final bool isOn;
-  final Color accentColor;
+void _showCarSpaceDialog(BuildContext context, EqController c) {
+  showModalBottomSheet(
+    context: context,
+    backgroundColor: Colors.transparent,
+    isScrollControlled: true,
+    builder: (ctx) => Container(
+      height: MediaQuery.of(ctx).size.height * 0.58,
+      decoration: BoxDecoration(
+        color: const Color(0xFF0C101A).withValues(alpha: 0.96),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+        border: Border.all(color: Colors.white12),
+        boxShadow: [
+          BoxShadow(
+            color: Prism.cyan.withValues(alpha: 0.22),
+            blurRadius: 32,
+            offset: const Offset(0, -4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Container(
+            margin: const EdgeInsets.only(top: 12, bottom: 8),
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: Colors.white24,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Row(
+                  children: [
+                    Icon(Icons.directions_car_rounded, color: Prism.cyan, size: 20),
+                    SizedBox(width: 8),
+                    Text(
+                      'CAR CABIN ACOUSTIC CALIBRATION',
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1.2,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  child: const Text('Done', style: TextStyle(color: Prism.cyan)),
+                ),
+              ],
+            ),
+          ),
+          const Divider(color: Colors.white12, height: 1),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              children: [
+                _CarSpaceTile(
+                  title: 'Sedan / Saloon',
+                  subtitle: 'Balanced 4-passenger cabin • +5dB Road Rumble Bass • 70% 3D Space Expand',
+                  preset: EqPresets.carSedan,
+                  isSelected: c.preset.id == 'car_sedan',
+                  onSelect: () {
+                    HapticFeedback.selectionClick();
+                    c.selectPreset(EqPresets.carSedan);
+                    Navigator.pop(ctx);
+                  },
+                ),
+                _CarSpaceTile(
+                  title: 'SUV / Large Cabin',
+                  subtitle: 'High cubic air mass • +7dB Sub-Bass Punch • 85% Wide Soundstage • 450mB Clarity',
+                  preset: EqPresets.carSuv,
+                  isSelected: c.preset.id == 'car_suv',
+                  onSelect: () {
+                    HapticFeedback.selectionClick();
+                    c.selectPreset(EqPresets.carSuv);
+                    Navigator.pop(ctx);
+                  },
+                ),
+                _CarSpaceTile(
+                  title: 'Compact / Hatchback',
+                  subtitle: 'Intimate cabin volume • +4dB Tight Bass • Controlled 60% Spatial Reflection',
+                  preset: EqPresets.carCompact,
+                  isSelected: c.preset.id == 'car_compact',
+                  onSelect: () {
+                    HapticFeedback.selectionClick();
+                    c.selectPreset(EqPresets.carCompact);
+                    Navigator.pop(ctx);
+                  },
+                ),
+                _CarSpaceTile(
+                  title: 'Coupe / Sports',
+                  subtitle: 'Cockpit nearfield staging • Fast transient bass • Glass glare damping (-1.5dB at 4kHz)',
+                  preset: EqPresets.carCoupe,
+                  isSelected: c.preset.id == 'car_coupe',
+                  onSelect: () {
+                    HapticFeedback.selectionClick();
+                    c.selectPreset(EqPresets.carCoupe);
+                    Navigator.pop(ctx);
+                  },
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+class _CarSpaceTile extends StatelessWidget {
+  const _CarSpaceTile({
+    required this.title,
+    required this.subtitle,
+    required this.preset,
+    required this.isSelected,
+    required this.onSelect,
+  });
+
+  final String title;
+  final String subtitle;
+  final EqPreset preset;
+  final bool isSelected;
+  final VoidCallback onSelect;
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 250),
-      curve: Curves.easeOutCubic,
-      width: 54,
-      height: 28,
-      padding: const EdgeInsets.all(2.5),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(14),
-        color: isOn
-            ? accentColor.withValues(alpha: 0.22)
-            : Colors.white.withValues(alpha: 0.05),
-        border: Border.all(
-          color: isOn
-              ? accentColor.withValues(alpha: 0.85)
-              : Colors.white.withValues(alpha: 0.12),
-          width: 1,
-        ),
-        boxShadow: isOn
-            ? [
-                BoxShadow(
-                  color: accentColor.withValues(alpha: 0.45),
-                  blurRadius: 12,
-                  spreadRadius: 1,
-                ),
-              ]
-            : null,
-      ),
-      alignment: isOn ? Alignment.centerRight : Alignment.centerLeft,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 250),
-        curve: Curves.easeOutCubic,
-        width: 21,
-        height: 21,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: RadialGradient(
-            center: const Alignment(-0.3, -0.4),
-            colors: isOn
-                ? [
-                    Colors.white,
-                    accentColor,
-                    accentColor.withValues(alpha: 0.8),
-                  ]
-                : [
-                    const Color(0xFF6E7485),
-                    const Color(0xFF2E3342),
-                    const Color(0xFF181B24),
-                  ],
+    return Container(
+      margin: const EdgeInsets.only(bottom: 10),
+      child: ListTile(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: BorderSide(
+            color: isSelected ? Prism.cyan.withValues(alpha: 0.6) : Colors.white10,
           ),
-          boxShadow: [
-            const BoxShadow(
-              color: Colors.black45,
-              blurRadius: 4,
-              offset: Offset(0, 2),
-            ),
-            if (isOn)
-              BoxShadow(
-                color: accentColor.withValues(alpha: 0.8),
-                blurRadius: 8,
-              ),
-          ],
         ),
+        tileColor: isSelected
+            ? Prism.cyan.withValues(alpha: 0.12)
+            : Colors.white.withValues(alpha: 0.03),
+        leading: Icon(
+          Icons.directions_car_filled_rounded,
+          color: isSelected ? Prism.cyan : Colors.white54,
+          size: 22,
+        ),
+        title: Text(
+          title,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.w600,
+            color: isSelected ? Prism.cyan : Colors.white,
+          ),
+        ),
+        subtitle: Padding(
+          padding: const EdgeInsets.only(top: 4),
+          child: Text(
+            subtitle,
+            style: const TextStyle(fontSize: 11.5, color: Colors.white54, height: 1.3),
+          ),
+        ),
+        trailing: isSelected
+            ? const Icon(Icons.check_circle_rounded, color: Prism.cyan, size: 20)
+            : const Icon(Icons.chevron_right_rounded, color: Colors.white24, size: 20),
+        onTap: onSelect,
       ),
     );
   }
@@ -3055,9 +3040,8 @@ class _SpecBadge extends StatelessWidget {
 }
 
 class _Led extends StatelessWidget {
-  const _Led({required this.on, this.color = Prism.cyan, this.size = 6});
+  const _Led({required this.on, this.size = 6});
   final bool on;
-  final Color color;
   final double size;
 
   @override
@@ -3068,25 +3052,24 @@ class _Led extends StatelessWidget {
       height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: on ? color : _a(Colors.white, 0.16),
-        boxShadow: on ? [BoxShadow(color: _a(color, 0.85), blurRadius: 8)] : null,
+        color: on ? Prism.cyan : _a(Colors.white, 0.16),
+        boxShadow: on ? [BoxShadow(color: _a(Prism.cyan, 0.85), blurRadius: 8)] : null,
       ),
     );
   }
 }
 
 class _EmbossedIcon extends StatelessWidget {
-  const _EmbossedIcon(this.icon, {this.size = 20, this.color = Prism.textDim});
+  const _EmbossedIcon(this.icon, {this.size = 20});
   final IconData icon;
   final double size;
-  final Color color;
 
   @override
   Widget build(BuildContext context) {
     return Icon(
       icon,
       size: size,
-      color: color,
+      color: Prism.textDim,
       shadows: [
         Shadow(color: _a(Colors.white, 0.14), offset: const Offset(0, 1)),
         Shadow(color: _a(Colors.black, 0.85), offset: const Offset(0, -1)),
@@ -3095,19 +3078,17 @@ class _EmbossedIcon extends StatelessWidget {
   }
 }
 
-/// Circular matte button with an inner bevel and an optional LED dot.
+/// Circular matte button with an inner bevel.
 class _MatteButton extends StatelessWidget {
   const _MatteButton({
     required this.child,
     required this.onTap,
     this.size = 44,
-    this.led,
   });
 
   final Widget child;
   final VoidCallback? onTap;
   final double size;
-  final Color? led;
 
   @override
   Widget build(BuildContext context) {
@@ -3129,7 +3110,6 @@ class _MatteButton extends StatelessWidget {
           boxShadow: [
             BoxShadow(
                 color: _a(Colors.black, 0.6), blurRadius: 10, offset: const Offset(0, 4)),
-            if (led != null) BoxShadow(color: _a(led!, 0.26), blurRadius: 16),
           ],
         ),
         child: Stack(
@@ -3143,8 +3123,6 @@ class _MatteButton extends StatelessWidget {
               ),
             ),
             child,
-            if (led != null)
-              Positioned(top: 5, child: _Led(on: true, color: led!, size: 4)),
           ],
         ),
       ),

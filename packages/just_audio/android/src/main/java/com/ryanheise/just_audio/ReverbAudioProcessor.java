@@ -53,13 +53,13 @@ public class ReverbAudioProcessor implements AudioProcessor {
     // 0=Off, 1=Studio, 2=Live Hall, 3=Music, 4=Party/Club, 5=Small Hall, 6=Plate
     private static final PresetConfig[] PRESETS = new PresetConfig[]{
         new PresetConfig(0.0f, 0.0f, 0.0f, 1.0f, 0.0f),       // 0: Dry (Off)
-        new PresetConfig(0.35f, 0.75f, 0.25f, 0.95f, 0.80f),  // 1: Studio (Tight decay ~400ms)
-        new PresetConfig(0.88f, 0.20f, 0.42f, 0.85f, 1.00f),  // 2: Live Hall (Lush tail ~3.8s)
-        new PresetConfig(0.60f, 0.50f, 0.28f, 0.90f, 0.90f),  // 3: Music (Warm vocal room)
-        new PresetConfig(0.75f, 0.35f, 0.35f, 0.88f, 0.95f),  // 4: Party / Club (Energetic bounce)
-        new PresetConfig(0.68f, 0.40f, 0.30f, 0.90f, 0.85f),  // 5: Small Hall (Intimate chamber)
-        new PresetConfig(0.55f, 0.05f, 0.32f, 0.90f, 1.00f),  // 6: Plate (Bright vintage metallic)
-        new PresetConfig(0.65f, 0.45f, 0.30f, 0.90f, 0.90f)   // 7: Custom / Default
+        new PresetConfig(0.35f, 0.75f, 0.22f, 0.96f, 0.80f),  // 1: Studio (Tight decay ~350ms)
+        new PresetConfig(0.62f, 0.52f, 0.20f, 0.95f, 0.85f),  // 2: Live Hall (Calibrated concert hall ~1.4s tail)
+        new PresetConfig(0.55f, 0.50f, 0.22f, 0.95f, 0.88f),  // 3: Music (Warm acoustic room)
+        new PresetConfig(0.68f, 0.38f, 0.25f, 0.92f, 0.90f),  // 4: Party / Club (Energetic bounce)
+        new PresetConfig(0.58f, 0.45f, 0.22f, 0.95f, 0.82f),  // 5: Small Hall (Intimate chamber)
+        new PresetConfig(0.52f, 0.20f, 0.24f, 0.94f, 0.95f),  // 6: Plate (Bright vintage metallic)
+        new PresetConfig(0.60f, 0.45f, 0.22f, 0.95f, 0.88f)   // 7: Custom / Default
     };
 
     // ─── Comb & Allpass Filter Structures ─────────────────────────────────────
@@ -216,11 +216,11 @@ public class ReverbAudioProcessor implements AudioProcessor {
     private void recomputeGains() {
         this.feedback = roomSize * SCALE_ROOM + OFFSET_ROOM;
         this.dampVal = damp * SCALE_DAMP;
-        float wetScaled = (baseWet * (currentAmount * 2.0f)) * SCALE_WET;
+        float wetScaled = baseWet * currentAmount * 2.0f;
         this.monoWet = wetScaled;
         this.wet1 = wetScaled * (width / 2.0f + 0.5f);
         this.wet2 = wetScaled * ((1.0f - width) / 2.0f);
-        this.dry = (currentPreset == 0) ? 1.0f : Math.max(0.3f, 1.0f - ((baseWet * currentAmount * 2.0f) * 0.4f));
+        this.dry = (currentPreset == 0) ? 1.0f : Math.max(0.6f, 1.0f - (baseWet * currentAmount * 0.4f));
     }
 
     private synchronized void muteAll() {

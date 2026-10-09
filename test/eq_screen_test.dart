@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:spectraflow/screens/eq_screen.dart';
+import 'package:spectraflow/services/audio_dsp_service.dart';
 
 void main() {
+  setUp(() {
+    AudioDspService.instance.resetFlat();
+  });
+
   group('EqScreen 1 / Prism Studio Equalizer Tests', () {
     test('EqController math, filter calculation, and persistence', () {
       final controller = EqController();
@@ -75,22 +80,22 @@ void main() {
       expect(find.text('Equalizer'), findsOneWidget);
       expect(find.text('EQ on / Passthrough'), findsOneWidget);
 
-      // 2. Verify Presets
-      expect(find.text('Passthrough'), findsOneWidget);
-      expect(find.text('Bass boost'), findsOneWidget);
-      expect(find.text('Vocal smooth'), findsOneWidget);
-
-      // Tap Bass boost
-      await tester.ensureVisible(find.text('Bass boost'));
-      await tester.pumpAndSettle();
-      await tester.tap(find.text('Bass boost'));
-      await tester.pumpAndSettle();
-      expect(controller.preset.id, equals('bass'));
-
-      // 3. Verify Graphic EQ bands exist
+      // 2. Verify Graphic EQ bands exist
       expect(find.text('31'), findsOneWidget);
       expect(find.text('1k'), findsOneWidget);
       expect(find.text('16k'), findsOneWidget);
+
+      // 3. Verify Car Acoustic Matrix panel and vehicle chips
+      expect(find.text('CAR ACOUSTIC DSP MATRIX'), findsOneWidget);
+      expect(find.text('AUTO-CALIBRATE CABIN SPACE'), findsOneWidget);
+      expect(find.text('SUV'), findsOneWidget);
+
+      // Tap SUV chip
+      await tester.ensureVisible(find.text('SUV'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('SUV'));
+      await tester.pumpAndSettle();
+      expect(controller.preset.id, equals('car_suv'));
 
       // 4. Verify Pre-amp section & Tactile Metal Knob
       expect(find.text('Pre-amp'), findsOneWidget);
